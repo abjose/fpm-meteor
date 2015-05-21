@@ -1,0 +1,35 @@
+<head>
+  <title>simple-todos</title>
+</head>
+<body>
+  {{> canv}}
+  {{> project}}
+</body>
+
+<template name="canv">
+  <canvas id="canvas" width="500" height="500"></canvas>
+</template>
+
+<template name="project">
+  <!-- consider using template subscrption and Template..subscriptionsReady-->
+  {{#each entities}}
+    {{> entity}}
+  {{/each}}
+  <!-- {{test_edge}} -->
+</template>
+
+<template name="entity">
+  <!-- TODO: branch to different kinds of entity -->
+  {{> branchToEntity}}
+</template>
+
+<template name="textbox">
+  <div class="testdiv"
+       style="top:{{ty}}px; left:{{tx}}px; width:{{w}}px; height:{{h}}px;">
+    {{ text }}
+  </div>
+</template>
+
+<template name="edge">
+  {{ draw }}
+</template>

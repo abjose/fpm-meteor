@@ -1,0 +1,11 @@
+/* CSS declarations go here */
+body {
+    margin: 0px;
+    padding: 0px;
+}
+.testdiv {
+    position: absolute;
+    margin: 0px;
+    padding: 0px;
+    border: thin black solid;
+}
