@@ -68,6 +68,11 @@ Template.project.helpers({
   entities: function() {
     return Entities.find({ project: this._id });
   },
+
+  refreshPaper: function() {
+    console.log('refreshing paper');
+    paper.view.draw();
+  },
 });
 
 Template.entity.helpers({
@@ -116,14 +121,9 @@ Template.textbox.events({
     } else if (e.which == 2) {  // center click
       var selected = Object.keys(Session.get("selected"));
       if (selected.length == 1) {
-	var edge =
-	  Entities.find({ type: "edge", from: selected[0], to: this._id });
-	if (edge.fetch().length != 0) {
-	  // ...
-	  Entities.remove({ type: "edge", from: selected[0], to: this._id });
-	} else {
-	  create_edge(selected[0], this._id);
-	}
+	// Create or destroy edge.
+	Meteor.call('setEdge', selected[0], this._id,
+		    Session.get("project_id"));
       }
     }
   },
@@ -175,14 +175,6 @@ function create_textbox(x, y, w, h, text) {
     x: x, y: y, w: w, h: h, text: text,
     type: "textbox", project: Session.get("project_id"),
   });
-}
-
-function create_edge(from_id, to_id) {
-  Entities.insert({
-    from: from_id, to: to_id,
-    type: "edge", project: Session.get("project_id"),
-  });
-
 }
 
 // stuff for getting edge point - move to edge model file
