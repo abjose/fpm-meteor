@@ -3,15 +3,22 @@
 </head>
 <body>
   {{> canv}}
-  {{> project}}
+  {{> fpm}}
 </body>
 
 <template name="canv">
   <canvas id="canvas" width="500" height="500"></canvas>
 </template>
 
+<template name="fpm">
+  <!-- can do with "with" instead if desired -->
+  {{#each currentProject}}
+    {{> project}}
+  {{/each}}
+</template>
+
 <template name="project">
-  <!-- consider using template subscrption and Template..subscriptionsReady-->
+  <!-- consider using template subscrption and Template.subscriptionsReady -->
   {{#each entities}}
     {{> entity}}
   {{/each}}

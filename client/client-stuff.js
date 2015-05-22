@@ -1,16 +1,21 @@
 Meteor.startup(function() {
-  //paper.install(window);
+  Meteor.call("getRoot", function(error, result){
+    Session.set('project_id', result);
+  });
+  
   Session.set("init_paper", false);
   paper.setup(document.getElementById("canvas"));
+  Session.set("initialized", true);  // where's a better place for this?
 });
 
+Session.setDefault("initialized", false);  // ...
+Session.setDefault("init_paper", false);  // can be set true in startup instead?
 Session.setDefault("selected", {});  // TODO: use ReactiveDict?
 Session.setDefault("view", {x: 0, y: 0, w: 500, h: 500});
 Session.setDefault("dragging", false);
 Session.setDefault("dragging_entity", false);
 Session.setDefault("click_pt", {x: 0, y: 0});
 Session.setDefault("drag_pt", {x: 0, y: 0});
-Session.setDefault("init_paper", false);  // ugh hack
 Session.setDefault("project_id", undefined);
 
 // TODO: maybe don't use window-level events.
@@ -50,22 +55,18 @@ Meteor.startup(function() {
   }
 });
 
-Template.project.created = function() {
-  // TODO: hack, should make root project elsewhere
-  var root = Projects.find({ title: "root" }).fetch();
-  console.log(root);
-  if (root.length == 0) {
-    console.log("MAKING A NEW ROOT PROJECT!");
-    Projects.insert({ title: "root" });
-    root = Projects.find({ title: "root" }).fetch(); // ...
+Template.fpm.helpers({
+  currentProject: function() {
+    var project = Projects.find({ _id: Session.get("project_id") });
+    if (project.count() == 0) console.log("No currentProject found.");
+    if (project.count() > 1) console.log("Multiple current proejcts found...");
+    return project;
   }
-  Session.set("project_id", root[0]._id);
-};
+});
 
 Template.project.helpers({
   entities: function() {
-    //return Entities.find({project: this._id});
-    return Entities.find({});
+    return Entities.find({ project: this._id });
   },
 });
 
