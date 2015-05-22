@@ -234,7 +234,11 @@ function line_intersection(a, b, c, d) {
   var numer_y = (a.x*b.y - a.y*b.x) * (c.y - d.y) -
     (a.y - b.y) * (c.x*d.y - c.y*d.x);
   var denom = (a.x - b.x) * (c.y - d.y) - (a.y - b.y) * (c.x - d.x);
-  if (Math.abs(denom) < 0.0001) return undefined;
+  if (Math.abs(denom) < 0.0001) {
+    // Approximately horizontal or vertical.
+    // Assumes c-d is the entity line...
+    return {x: (c.x + d.x) / 2, y: (c.y + d.y) / 2};
+  }
   // ... other edge cases
   return {x: numer_x / denom, y: numer_y / denom};
 }
