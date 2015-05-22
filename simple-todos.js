@@ -16,9 +16,9 @@ if(Meteor.isServer) {
       console.log("in setEdge");
       if (edge.count() != 0) {
 	// TODO: possible to remove given document instead of finding again?
-	Entities.remove({ type: "edge", from: from, to: to, project: project});
+	Entities.remove({ type: "edge", from: from, to: to, project: project });
       } else {
-	Entities.insert({from: from, to: to, type: "edge", project: project});
+	Entities.insert({ type: "edge", from: from, to: to, project: project });
       }
     }
   });  
