@@ -1,5 +1,5 @@
 Meteor.startup(function() {
-  Meteor.call("getRoot", function(error, result){
+  Meteor.call("getProjectID", "root", function(error, result){
     Session.set('project_id', result);
   });
   
@@ -17,6 +17,14 @@ Session.setDefault("dragging_entity", false);
 Session.setDefault("click_pt", {x: 0, y: 0});
 Session.setDefault("drag_pt", {x: 0, y: 0});
 Session.setDefault("project_id", undefined);
+
+Router.route('/:project/', function () {
+  Meteor.call("getProjectID", this.params.project,  function(error, result){
+    Session.set('project_id', result);
+  });
+  var query = this.params.query;
+  console.log('query:', query);
+});
 
 // TODO: maybe don't use window-level events.
 Meteor.startup(function() {

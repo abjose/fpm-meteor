@@ -4,10 +4,12 @@ Entities= new Mongo.Collection("entities");
 
 if(Meteor.isServer) {
   Meteor.methods({
-    getRoot: function() {
-      var root = Projects.find({ title: "root" });
-      if (root.count() == 0) console.log("NO ROOT FOUND!");
-      return root.fetch()[0]._id;
+    // TODO: possible to set Session var here?
+    // TODO: make project if nonexistent
+    getProjectID: function(title) {
+      var project = Projects.find({ title: title });
+      if (project.count() == 0) console.log("PROJECT NOT FOUND!");
+      return project.fetch()[0]._id;
     },
 
     setEdge: function(from, to, project) {
