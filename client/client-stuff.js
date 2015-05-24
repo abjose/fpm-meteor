@@ -11,7 +11,8 @@ Meteor.startup(function() {
 Session.setDefault("initialized", false);  // ...
 Session.setDefault("init_paper", false);  // can be set true in startup instead?
 Session.setDefault("selected", {});  // TODO: use ReactiveDict?
-Session.setDefault("view", {x: 0, y: 0, w: 500, h: 500});
+Session.setDefault("view", {x: 0, y: 0, scale: 1});  // view by center pt
+Session.setDefault("screen", {w: 500, h: 500});
 Session.setDefault("dragging", false);
 Session.setDefault("dragging_entity", false);
 Session.setDefault("click_pt", {x: 0, y: 0});
@@ -19,6 +20,7 @@ Session.setDefault("drag_pt", {x: 0, y: 0});
 Session.setDefault("project_id", undefined);
 
 Router.route('/:project/', function () {
+  // Is calling a meteor method here bad practice?
   Meteor.call("getProjectID", this.params.project,  function(error, result){
     Session.set('project_id', result);
   });
@@ -57,10 +59,25 @@ Meteor.startup(function() {
     Session.set("dragging_entity", false);
   }
 
-  window.ondblclick = function (e) {
+  window.ondblclick = function(e) {
     var s = 50;
     create_textbox(e.clientX - s/2, e.clientY - s/2, s, s, "test");
   }
+
+  window.onkeypress = function(e) {
+    // test view movement
+    var view = Session.get('view');
+    view.x += 10;
+    view.y += 10;
+    Session.set('view', view);
+  }
+
+  // Update paperjs view based on changes to relevant Session variables.
+  Tracker.autorun(function() {
+    var view = Session.get('view');
+    paper.view.center = view;
+    paper.view.zoom = view.scale;
+  });
 });
 
 Template.fpm.helpers({
@@ -94,26 +111,31 @@ Template.entity.helpers({
 
 Template.textbox.helpers({
   tx: function() {
+    // TODO: how to combine tx and ty so only have to do once?
+    var screen_pt = WorldToScreen(this);
     if (Session.get("dragging") && Session.get("dragging_entity")) {
       if (Session.get("selected")[this._id]) {
 	var cp = Session.get('click_pt');
 	var dp = Session.get('drag_pt');
-	return this.x + dp.x - cp.x;
+	return screen_pt.x + dp.x - cp.x;
       }
     }
-    return this.x;
+    return screen_pt.x;
   },
 
   ty: function() {
+    var screen_pt = WorldToScreen(this);
     if (Session.get("dragging") && Session.get("dragging_entity")) {
       if (Session.get("selected")[this._id]) {
 	var cp = Session.get('click_pt');
 	var dp = Session.get('drag_pt');
-	return this.y + dp.y - cp.y;
+	return screen_pt.y + dp.y - cp.y;
       }
     }
-    return this.y;
+    return screen_pt.y;
   },
+
+  // TODO: add stuff for width and height
 });
 
 Template.textbox.events({
@@ -179,8 +201,12 @@ function drawVector(x1, y1, x2, y2) {
 // TODO: put these in model files when you have those
 
 function create_textbox(x, y, w, h, text) {
+  // args should be in screen coords
+  var world_pt = ScreenToWorld({x:x, y:y});
   Entities.insert({
-    x: x, y: y, w: w, h: h, text: text,
+    x: world_pt.x, y: world_pt.y,
+    w: w * world_pt.scale, h: h * world_pt.scale,
+    text: text,
     type: "textbox", project: Session.get("project_id"),
   });
 }
@@ -241,4 +267,26 @@ function line_intersection(a, b, c, d) {
   }
   // ... other edge cases
   return {x: numer_x / denom, y: numer_y / denom};
+}
+
+function WorldToScreen(world_pt) {
+  var view = Session.get('view');
+  var screen = Session.get('screen');
+  // TODO: probably can reduce this so not explicitly calculating BB
+  var world_corner = { x: view.x - (screen.w * view.scale) / 2,
+		       y: view.y - (screen.h * view.scale) / 2 };
+  return { x: (world_pt.x - world_corner.x) * view.scale,
+	   y: (world_pt.y - world_corner.y) * view.scale,
+	   scale: view.scale };  // worth returning scale?
+}
+
+function ScreenToWorld(screen_pt) {
+  var view = Session.get('view');
+  var screen = Session.get('screen');
+  var inv_scale = 1 / view.scale;
+  var world_corner = { x: view.x - (screen.w * view.scale) / 2,
+		       y: view.y - (screen.h * view.scale) / 2 };
+  return { x: screen_pt.x * inv_scale + world_corner.x,
+	   y: screen_pt.y * inv_scale + world_corner.y,
+	   scale: inv_scale };
 }
