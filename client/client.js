@@ -20,13 +20,17 @@ Session.setDefault("click_pt", {x: 0, y: 0});
 Session.setDefault("drag_pt", {x: 0, y: 0});
 Session.setDefault("project_id", undefined);
 
-Router.route('/:project/', function () {
+Router.route("/:project/", function () {
   // Is calling a meteor method here bad practice?
   Meteor.call("getProjectID", this.params.project,  function(error, result){
-    Session.set('project_id', result);
+    Session.set("project_id", result);
   });
   var query = this.params.query;
-  console.log('query:', query);
+  if ("x" in query && "y" in query) {
+    var view = {x: query["x"], y: query["y"], scale: 1}
+    if ("scale" in query) view["scale"] = query["scale"];
+    Session.set("view", view);
+  }
 });
 
 // TODO: maybe don't use window-level events.
