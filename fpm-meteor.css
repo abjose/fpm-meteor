@@ -10,5 +10,18 @@ body {
     transform-origin: 0% 0%;
 }
 #canvas {
+    /*border: thin black solid;*/
+}
+#project_area {
+    position: absolute;
+    margin: 0px;
+    padding: 0px;
+    /*top: 25px;*/
+    top: 0px;
+    left: 0px;
+    width: 500px;
+    height: 500px;
+    overflow: hidden;
     border: thin black solid;
+    background-color : transparent;
 }

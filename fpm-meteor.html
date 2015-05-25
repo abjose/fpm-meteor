@@ -11,10 +11,12 @@
 </template>
 
 <template name="fpm">
-  <!-- can do with "with" instead if desired -->
-  {{#each currentProject}}
-    {{> project}}
-  {{/each}}
+  <div id="project_area">
+    <!-- can do with "with" instead if desired -->
+    {{#each currentProject}}
+      {{> project}}
+    {{/each}}
+  </div>
 </template>
 
 <template name="project">
