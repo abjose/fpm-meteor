@@ -64,16 +64,16 @@ Meteor.startup(function() {
   }
 
   window.ondblclick = function(e) {
-    var s = 50;
-    create_textbox(e.clientX - s/2, e.clientY - s/2, s, s, "test");
+    var world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
+    create_textbox(world_pt.x, world_pt.y, 50, 50, "test");
   }
 
   window.onkeypress = function(e) {
     // test view movement
     var view = Session.get('view');
-    view.x -= 10;
-    view.y -= 10;
-    //view.scale += 0.1;
+    //view.x -= 10;
+    //view.y -= 10;
+    view.scale += 0.1;
     Session.set('view', view);
   }
 
@@ -215,11 +215,9 @@ function drawVector(x1, y1, x2, y2) {
 // TODO: put these in model files when you have those
 
 function create_textbox(x, y, w, h, text) {
-  // args should be in screen coords
-  var world_pt = ScreenToWorld({x:x, y:y});
+  // args should be in world coords
   Entities.insert({
-    x: world_pt.x, y: world_pt.y, w: w, h: h,
-    text: text,
+    x: x - w/2, y: y - h/2, w: w, h: h, text: text,
     type: "textbox", project: Session.get("project_id"),
   });
 }
