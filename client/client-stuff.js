@@ -12,6 +12,7 @@ Session.setDefault("initialized", false);  // ...
 Session.setDefault("init_paper", false);  // can be set true in startup instead?
 Session.setDefault("selected", {});  // TODO: use ReactiveDict?
 Session.setDefault("view", {x: 250, y: 250, scale: 1}); // view by center pt
+Session.setDefault("initial_view", {}); // lame
 Session.setDefault("screen", {w: 500, h: 500});
 Session.setDefault("dragging", false);
 Session.setDefault("dragging_entity", false);
@@ -36,12 +37,28 @@ Meteor.startup(function() {
     var world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
     Session.set("click_pt", {x: world_pt.x, y: world_pt.y});
     Session.set("drag_pt", {x: world_pt.x, y: world_pt.y});
+    Session.set("initial_view", Session.get("view"));
     Session.set("dragging", true);
   }
 
   window.onmousemove = function(e) {
-    var world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
+    var world_pt;
+    // TODO: clean this up...
+    if (Session.get("dragging") && !Session.get("dragging_entity")) {
+      world_pt = ScreenToWorld({x: e.clientX, y: e.clientY},
+			       Session.get("initial_view"));
+    } else {
+      world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
+    }
     Session.set("drag_pt", {x: world_pt.x, y: world_pt.y});
+
+    if (Session.get("dragging") && !Session.get("dragging_entity")) {
+      var cp = Session.get('click_pt');
+      var view = Session.get("initial_view");
+      view.x -= world_pt.x - cp.x;
+      view.y -= world_pt.y - cp.y;
+      Session.set("view", view);
+    }
   }
 
   window.onmouseup = function() {
@@ -68,14 +85,16 @@ Meteor.startup(function() {
     create_textbox(world_pt.x, world_pt.y, 50, 50, "test");
   }
 
-  window.onkeypress = function(e) {
-    // test view movement
-    var view = Session.get('view');
-    //view.x -= 10;
-    //view.y -= 10;
-    view.scale += 0.1;
-    Session.set('view', view);
-  }
+  document.addEventListener('wheel', function(e) {
+    var view = Session.get("view");
+    if (e.deltaY > 0) {
+      view.scale -= 0.1;
+    } else {
+      view.scale += 0.1;
+    }
+    Session.set("view", view);
+  }, false);
+
 
   // Update paperjs view based on changes to relevant Session variables.
   Tracker.autorun(function() {
@@ -280,8 +299,8 @@ function line_intersection(a, b, c, d) {
   return {x: numer_x / denom, y: numer_y / denom};
 }
 
-function WorldToScreen(world_pt) {
-  var view = Session.get('view');
+function WorldToScreen(world_pt, view) {
+  if (view == undefined) view = Session.get('view');
   var screen = Session.get('screen');
   // TODO: probably can reduce this so not explicitly calculating BB
   var view_corner = { x: view.x - (screen.w / view.scale) / 2,
@@ -291,8 +310,8 @@ function WorldToScreen(world_pt) {
   	   scale: view.scale };  // worth returning scale?
 }
 
-function ScreenToWorld(screen_pt) {
-  var view = Session.get('view');
+function ScreenToWorld(screen_pt, view) {
+  if (view == undefined) view = Session.get('view');
   var screen = Session.get('screen');
   var view_corner = { x: view.x - (screen.w / view.scale) / 2,
 		      y: view.y - (screen.h / view.scale) / 2 };
