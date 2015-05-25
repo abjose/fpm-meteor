@@ -88,9 +88,9 @@ Meteor.startup(function() {
   document.addEventListener('wheel', function(e) {
     var view = Session.get("view");
     if (e.deltaY > 0) {
-      view.scale -= 0.1;
+      view.scale *= 0.9;
     } else {
-      view.scale += 0.1;
+      view.scale *= 1.1;
     }
     Session.set("view", view);
   }, false);
