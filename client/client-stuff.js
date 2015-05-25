@@ -11,7 +11,7 @@ Meteor.startup(function() {
 Session.setDefault("initialized", false);  // ...
 Session.setDefault("init_paper", false);  // can be set true in startup instead?
 Session.setDefault("selected", {});  // TODO: use ReactiveDict?
-Session.setDefault("view", {x: 0, y: 0, scale: 1});  // view by center pt
+Session.setDefault("view", {x: 250, y: 250, scale: 1}); // view by center pt
 Session.setDefault("screen", {w: 500, h: 500});
 Session.setDefault("dragging", false);
 Session.setDefault("dragging_entity", false);
@@ -31,13 +31,17 @@ Router.route('/:project/', function () {
 // TODO: maybe don't use window-level events.
 Meteor.startup(function() {
   window.onmousedown = function(e) {
-    Session.set("click_pt", {x: e.clientX, y: e.clientY});
-    Session.set("drag_pt", {x: e.clientX, y: e.clientY});
+    // TODO: consider finding better place to do this transform
+    // currently have to convert back to screen coords in textbox helper
+    var world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
+    Session.set("click_pt", {x: world_pt.x, y: world_pt.y});
+    Session.set("drag_pt", {x: world_pt.x, y: world_pt.y});
     Session.set("dragging", true);
   }
 
   window.onmousemove = function(e) {
-    Session.set("drag_pt", {x: e.clientX, y: e.clientY});
+    var world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
+    Session.set("drag_pt", {x: world_pt.x, y: world_pt.y});
   }
 
   window.onmouseup = function() {
@@ -67,8 +71,9 @@ Meteor.startup(function() {
   window.onkeypress = function(e) {
     // test view movement
     var view = Session.get('view');
-    view.x += 10;
-    view.y += 10;
+    view.x -= 10;
+    view.y -= 10;
+    //view.scale += 0.1;
     Session.set('view', view);
   }
 
@@ -110,27 +115,36 @@ Template.entity.helpers({
 });
 
 Template.textbox.helpers({
+  scale: function() {
+    var view = Session.get("view");
+    return view.scale;
+  },
+
   tx: function() {
     // TODO: how to combine tx and ty so only have to do once?
-    var screen_pt = WorldToScreen(this);
-    if (Session.get("dragging") && Session.get("dragging_entity")) {
-      if (Session.get("selected")[this._id]) {
-	var cp = Session.get('click_pt');
-	var dp = Session.get('drag_pt');
-	return screen_pt.x + dp.x - cp.x;
-      }
+    var screen_pt;
+    if (Session.get("dragging") && Session.get("dragging_entity")
+	&& Session.get("selected")[this._id]) {
+      var cp = Session.get('click_pt');
+      var dp = Session.get('drag_pt');
+      screen_pt = WorldToScreen({x: this.x + dp.x - cp.x,
+				 y: this.y + dp.y - cp.y});
+    } else {
+      screen_pt = WorldToScreen(this);
     }
     return screen_pt.x;
   },
 
   ty: function() {
-    var screen_pt = WorldToScreen(this);
-    if (Session.get("dragging") && Session.get("dragging_entity")) {
-      if (Session.get("selected")[this._id]) {
-	var cp = Session.get('click_pt');
-	var dp = Session.get('drag_pt');
-	return screen_pt.y + dp.y - cp.y;
-      }
+    var screen_pt;
+    if (Session.get("dragging") && Session.get("dragging_entity")
+	&& Session.get("selected")[this._id]) {
+      var cp = Session.get('click_pt');
+      var dp = Session.get('drag_pt');
+      screen_pt = WorldToScreen({x: this.x + dp.x - cp.x,
+				 y: this.y + dp.y - cp.y});
+    } else {
+      screen_pt = WorldToScreen(this);
     }
     return screen_pt.y;
   },
@@ -170,7 +184,7 @@ Template.edge.helpers({
     var from_entity = Entities.find({ _id: this.from }).fetch()[0];
     var to_entity = Entities.find({ _id: this.to }).fetch()[0];
     var start_pt = {x: from_entity.x + from_entity.w / 2,
-		    y: from_entity.y + from_entity.h / 2}
+		    y: from_entity.y + from_entity.h / 2};
     var end_pt = edge_terminal_pt(from_entity, to_entity);
     this.paper_edge = drawVector(start_pt.x, start_pt.y, end_pt.x, end_pt.y);
   },
@@ -204,8 +218,7 @@ function create_textbox(x, y, w, h, text) {
   // args should be in screen coords
   var world_pt = ScreenToWorld({x:x, y:y});
   Entities.insert({
-    x: world_pt.x, y: world_pt.y,
-    w: w * world_pt.scale, h: h * world_pt.scale,
+    x: world_pt.x, y: world_pt.y, w: w, h: h,
     text: text,
     type: "textbox", project: Session.get("project_id"),
   });
@@ -273,20 +286,19 @@ function WorldToScreen(world_pt) {
   var view = Session.get('view');
   var screen = Session.get('screen');
   // TODO: probably can reduce this so not explicitly calculating BB
-  var world_corner = { x: view.x - (screen.w * view.scale) / 2,
-		       y: view.y - (screen.h * view.scale) / 2 };
-  return { x: (world_pt.x - world_corner.x) * view.scale,
-	   y: (world_pt.y - world_corner.y) * view.scale,
-	   scale: view.scale };  // worth returning scale?
+  var view_corner = { x: view.x - (screen.w / view.scale) / 2,
+		      y: view.y - (screen.h / view.scale) / 2 };
+  return { x: (world_pt.x - view_corner.x) * view.scale,
+  	   y: (world_pt.y - view_corner.y) * view.scale,
+  	   scale: view.scale };  // worth returning scale?
 }
 
 function ScreenToWorld(screen_pt) {
   var view = Session.get('view');
   var screen = Session.get('screen');
-  var inv_scale = 1 / view.scale;
-  var world_corner = { x: view.x - (screen.w * view.scale) / 2,
-		       y: view.y - (screen.h * view.scale) / 2 };
-  return { x: screen_pt.x * inv_scale + world_corner.x,
-	   y: screen_pt.y * inv_scale + world_corner.y,
-	   scale: inv_scale };
+  var view_corner = { x: view.x - (screen.w / view.scale) / 2,
+		      y: view.y - (screen.h / view.scale) / 2 };
+  return { x: screen_pt.x / view.scale + view_corner.x,
+	   y: screen_pt.y / view.scale + view_corner.y,
+	   scale: view.scale };
 }

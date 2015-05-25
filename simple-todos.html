@@ -32,7 +32,9 @@
 
 <template name="textbox">
   <div class="testdiv"
-       style="top:{{ty}}px; left:{{tx}}px; width:{{w}}px; height:{{h}}px;">
+       style="top:{{ty}}px; left:{{tx}}px; width:{{w}}px; height:{{h}}px;
+	      transform: scale({{scale}}, {{scale}});
+	      -webkit-transform: scale({{scale}}, {{scale}});">
     {{ text }}
   </div>
 </template>
