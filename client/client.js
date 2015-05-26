@@ -33,6 +33,17 @@ Router.route("/:project/", function () {
   }
 });
 
+// Update URL to reflect View parameters.
+// TODO: this is a bit hacky.
+Tracker.autorun(function() {
+  var route = Router.current();
+  if (route == null) return;
+  var view = Session.get('view');
+  var project = route.params.project;
+  var url = '/'+project+'?x='+view.x+'&y='+view.y+'&scale='+view.scale;
+  Router.go(url);
+});
+
 // TODO: maybe don't use window-level events.
 Meteor.startup(function() {
   window.onmousedown = function(e) {
