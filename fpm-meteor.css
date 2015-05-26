@@ -3,7 +3,6 @@ body {
     padding: 0px;
 }
 #topbar {
-    width: 550;
 }
 #titlebox {
     text-align: center;
@@ -12,14 +11,12 @@ body {
     display: inline-block;
 }
 .projectInfo {
-    left: 50px;
     width: 500px;
     border: thin black solid;
     display: inline-block;
 }
 .toolbar {
     border: thin black solid;
-    /*width: 50px;*/
     float: left;
 }
 .toolbarItem {
@@ -28,12 +25,8 @@ body {
     height: 50px;
 }
 .tag {
-    top: 0px;
     display: inline;
     border: thin black solid;
-    margin: 0;
-    padding: 0
-    border: 0;
     /*vertical-align: top;*/
     font-size: .8em;
 }

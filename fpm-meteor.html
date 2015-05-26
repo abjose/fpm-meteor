@@ -34,8 +34,8 @@
 <template name="projectInfo">
   <!-- Populate projectInfo area. -->
   <div id="topbar">
-    {{> title }}
-    <div class="projectInfo">
+    <!-- Put all on same line to avoid little gap. I hate html. -->
+    {{> title }}<div class="projectInfo">
       {{#each tags}}
       {{> tag}}
       {{/each}}
