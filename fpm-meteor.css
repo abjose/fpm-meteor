@@ -2,17 +2,20 @@ body {
     margin: 0px;
     padding: 0px;
 }
+#topbar {
+    width: 550;
+}
 #titlebox {
+    text-align: center;
+    border: thin black solid;
     width: 50px;
-    float: left;
-    /*display: inline;*/
+    display: inline-block;
 }
 .projectInfo {
+    left: 50px;
     width: 500px;
     border: thin black solid;
-}
-.projectInfo {
-    
+    display: inline-block;
 }
 .toolbar {
     border: thin black solid;

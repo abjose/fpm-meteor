@@ -10,11 +10,10 @@
 </template>
 
 <template name="fpm">
-  <!--{{> title }}-->
   {{> tools }}
   <div id="project_area">
     {{> canv }}
-    <!-- can do with "with" instead if desired -->
+    <!-- can use "with" instead -->
     {{#each currentProject}}
       {{> project}}
     {{/each}}
@@ -34,11 +33,13 @@
 
 <template name="projectInfo">
   <!-- Populate projectInfo area. -->
-  <div class="projectInfo">
-    {{> title}}
-    {{#each tags}}
+  <div id="topbar">
+    {{> title }}
+    <div class="projectInfo">
+      {{#each tags}}
       {{> tag}}
-    {{/each}}
+      {{/each}}
+    </div>
   </div>
 </template>
 
