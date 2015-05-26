@@ -122,10 +122,30 @@ Meteor.startup(function() {
 Template.fpm.helpers({
   currentProject: function() {
     var project = Projects.find({ _id: Session.get("project_id") });
-    if (project.count() == 0) console.log("No currentProject found.");
-    if (project.count() > 1) console.log("Multiple current proejcts found...");
+    // if (project.count() == 0) console.log("No currentProject found.");
+    if (project.count() > 1) console.log("Multiple current projects found...");
     return project;
-  }
+  },
+});
+
+Template.projectInfo.helpers({
+  tags: function() {
+    console.log("gettin dem tags");
+    // for tags could just have title value pair but value is undefined?
+    return [{title: 'tag1'}, {title: 'tag2'}, {title: 'tag3'}, {title: '+'}];
+  },
+
+  attributes: function() {
+    // better name? why not just mix with tags?
+    return {attr1: 5, attr2:0.1, animalsound: 'woof'};
+  },  
+});
+
+Template.toolbar.helpers({
+  tools: function() {
+    return [{name: "tool1"}, {name: "tool2"}, {name: "tool3"}];
+  },
+  
 });
 
 Template.project.helpers({

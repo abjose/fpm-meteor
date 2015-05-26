@@ -2,7 +2,6 @@
   <title>simple-todos</title>
 </head>
 <body>
-  {{> canv}}
   {{> fpm}}
 </body>
 
@@ -11,7 +10,10 @@
 </template>
 
 <template name="fpm">
+  <!--{{> title }}-->
+  {{> tools }}
   <div id="project_area">
+    {{> canv }}
     <!-- can do with "with" instead if desired -->
     {{#each currentProject}}
       {{> project}}
@@ -19,13 +21,60 @@
   </div>
 </template>
 
+<template name="title">
+  <div id="titlebox">
+    fpm
+  </div>
+</template>
+
+<template name="tools">
+  {{> projectInfo }}
+  {{> toolbar }}
+</template>
+
+<template name="projectInfo">
+  <!-- Populate projectInfo area. -->
+  <div class="projectInfo">
+    {{> title}}
+    {{#each tags}}
+      {{> tag}}
+    {{/each}}
+  </div>
+</template>
+
+<!-- why aren't they flush with top? -->
+<template name="tag">
+  <div class="tag" contentEditable="true">
+    {{ title }}
+  </div>
+</template>
+
+<template name="toolbar">
+  <div class="toolbar">
+    {{#each tools}}
+      {{> toolbarItem}}
+    {{/each}}
+    <!-- each tools... -->
+  </div>
+</template>
+
+<template name="toolbarItem">
+  <!-- oh god better name please? maybe just 'tool' -->
+  <div class="toolbarItem">
+    {{ name }}
+  </div>
+</template>
+
 <template name="project">
   <!-- consider using template subscrption and Template.subscriptionsReady -->
+  <!-- Render every entity for this project. -->
   {{#each entities}}
     {{> entity}}
   {{/each}}
   {{refreshPaper}}
 </template>
+
+<!-- probably should wrap tag template in another div -->
 
 <template name="entity">
   <!-- TODO: branch to different kinds of entity -->
