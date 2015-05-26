@@ -34,11 +34,13 @@
 <template name="projectInfo">
   <!-- Populate projectInfo area. -->
   <div id="topbar">
-    <!-- Put all on same line to avoid little gap. I hate html. -->
-    {{> title }}<div class="projectInfo">
+    {{> title }}
+    <div class="projectInfo">
+      <div> {{ projectTitle }} </div>
       {{#each tags}}
-      {{> tag}}
+        {{> tag}}
       {{/each}}
+      <div> backref1 backref2 </div>
     </div>
   </div>
 </template>

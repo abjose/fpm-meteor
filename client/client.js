@@ -129,8 +129,11 @@ Template.fpm.helpers({
 });
 
 Template.projectInfo.helpers({
+  projectTitle: function() {
+    return "project title";
+  },
+  
   tags: function() {
-    console.log("gettin dem tags");
     // for tags could just have title value pair but value is undefined?
     return [{title: 'tag1'}, {title: 'tag2'}, {title: 'tag3'}, {title: '+'}];
   },

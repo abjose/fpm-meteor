@@ -6,7 +6,6 @@ body {
 }
 #titlebox {
     text-align: center;
-    border: thin black solid;
     width: 50px;
     display: inline-block;
 }
