@@ -85,11 +85,12 @@
 </template>
 
 <template name="textbox">
-  <div class="testdiv"
-       style="top:{{ty}}px; left:{{tx}}px; width:{{w}}px; height:{{h}}px;
+  <div class="testdiv" contentEditable="{{editing}}"
+       style="top:{{ty}}px; left:{{tx}}px;
 	      transform: scale({{scale}}, {{scale}});
 	      -webkit-transform: scale({{scale}}, {{scale}});">
-    {{ text }}
+    <!-- Nice way to remove extra spaces without putting all on same line? -->
+    {{#if editing}}{{text}}{{else}}{{#markdown}}{{text}}{{/markdown}}{{/if}}
   </div>
 </template>
 

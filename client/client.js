@@ -96,8 +96,8 @@ Meteor.startup(function() {
   }
 
   window.ondblclick = function(e) {
-    var world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
-    create_textbox(world_pt.x, world_pt.y, 50, 50, "test");
+    //var world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
+    //create_textbox(world_pt.x, world_pt.y, 50, 50, "test");
   }
 
   document.addEventListener('wheel', function(e) {
@@ -171,6 +171,10 @@ Template.entity.helpers({
   }
 });
 
+Template.textbox.created = function() {
+  this.edit_mode = new ReactiveVar(false);
+}
+
 Template.textbox.helpers({
   scale: function() {
     var view = Session.get("view");
@@ -207,6 +211,10 @@ Template.textbox.helpers({
   },
 
   // TODO: add stuff for width and height
+
+  editing: function() {
+    return Template.instance().edit_mode.get();
+  },
 });
 
 Template.textbox.events({
@@ -227,6 +235,22 @@ Template.textbox.events({
 		    Session.get("project_id"));
       }
     }
+  },
+
+  // maybe need to have both things always there?
+
+  //"dblclick .testdiv": function(e, template) {
+  "dblclick": function(e, template) {
+    template.edit_mode.set(!template.edit_mode.get());
+    console.log('selected');
+  },
+  
+  //"blur .textbox-editing": function(e, template) {
+  "neverOMG": function(e, template) {
+    console.log(e.target.value);
+    Entities.update( this._id, { $set: { text: e.target.value }});
+    template.edit_mode.set(false);
+    console.log('deselected');
   },
 });
 

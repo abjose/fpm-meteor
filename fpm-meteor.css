@@ -49,3 +49,10 @@ body {
     border: thin black solid;
     transform-origin: 0% 0%;
 }
+.textbox-editing  {
+    position: absolute;
+    margin: 0px;
+    padding: 0px;
+    border: thin black solid;
+    transform-origin: 0% 0%;
+}
