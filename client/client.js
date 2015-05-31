@@ -215,6 +215,34 @@ Template.textbox.helpers({
   editing: function() {
     return Template.instance().edit_mode.get();
   },
+
+  initEditor: function() {
+    var editor = CodeMirror(document.getElementById("project_area"), {
+      value: this.text,
+      mode:  "markdown",
+      theme: "default",
+      autofocus: true,
+      extraKeys: {"Enter": "newlineAndIndentContinueMarkdownList"},
+    });
+
+    var screen_pt = WorldToScreen(this);
+    console.log(screen_pt);
+    var wrapper = editor.getWrapperElement();
+    wrapper.style.position = "absolute";
+    wrapper.style.left = screen_pt.x + "px";
+    wrapper.style.top  = screen_pt.y + "px";
+    editor.setSize(this.w, this.h);
+
+    var edit_mode = Template.instance().edit_mode;
+    var self = this;
+    editor.on('blur', function() {
+      console.log(editor.getValue());
+      //console.log(e.target.value);
+      Entities.update( self._id, { $set: { text: editor.getValue() }});
+      wrapper.parentNode.removeChild(wrapper);
+      edit_mode.set(false);
+    });
+  },
 });
 
 Template.textbox.events({
@@ -237,20 +265,8 @@ Template.textbox.events({
     }
   },
 
-  // maybe need to have both things always there?
-
-  //"dblclick .testdiv": function(e, template) {
   "dblclick": function(e, template) {
-    template.edit_mode.set(!template.edit_mode.get());
-    console.log('selected');
-  },
-  
-  //"blur .textbox-editing": function(e, template) {
-  "neverOMG": function(e, template) {
-    console.log(e.target.value);
-    Entities.update( this._id, { $set: { text: e.target.value }});
-    template.edit_mode.set(false);
-    console.log('deselected');
+    template.edit_mode.set(true);
   },
 });
 

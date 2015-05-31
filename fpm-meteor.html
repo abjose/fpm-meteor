@@ -1,12 +1,14 @@
 <head>
   <title>simple-todos</title>
+</style>
+
 </head>
 <body>
   {{> fpm}}
 </body>
 
 <template name="canv">
-  <canvas id="canvas" width="500" height="500"></canvas>
+  <canvas id="canvas"></canvas>
 </template>
 
 <template name="fpm">
@@ -85,12 +87,17 @@
 </template>
 
 <template name="textbox">
-  <div class="testdiv" contentEditable="{{editing}}"
+  <div class="testdiv"
        style="top:{{ty}}px; left:{{tx}}px;
 	      transform: scale({{scale}}, {{scale}});
 	      -webkit-transform: scale({{scale}}, {{scale}});">
-    <!-- Nice way to remove extra spaces without putting all on same line? -->
-    {{#if editing}}{{text}}{{else}}{{#markdown}}{{text}}{{/markdown}}{{/if}}
+    {{#if editing}}
+      {{initEditor}}
+    {{else}}
+      {{#markdown}}
+        {{text}}
+      {{/markdown}}
+    {{/if}}
   </div>
 </template>
 
