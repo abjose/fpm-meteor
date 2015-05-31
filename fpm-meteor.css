@@ -30,7 +30,9 @@ body {
     font-size: .8em;
 }
 #canvas {
-    border: thin black solid;
+    /* border: thin black solid; */
+    width: 500px;
+    height: 500px;
 }
 #project_area {
     position: relative;
