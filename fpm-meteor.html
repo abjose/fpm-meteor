@@ -93,10 +93,9 @@
 	      -webkit-transform: scale({{scale}}, {{scale}});">
     {{#if editing}}
       {{initEditor}}
+      <!-- <textarea>{{text}}</textarea> -->
     {{else}}
-      {{#markdown}}
-        {{text}}
-      {{/markdown}}
+      {{#markdown}}{{text}}{{/markdown}}
     {{/if}}
   </div>
 </template>

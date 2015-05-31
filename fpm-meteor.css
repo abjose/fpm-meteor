@@ -50,6 +50,7 @@ body {
     padding: 0px;
     border: thin black solid;
     transform-origin: 0% 0%;
+    resize: both;
 }
 .textbox-editing  {
     position: absolute;
@@ -58,3 +59,11 @@ body {
     border: thin black solid;
     transform-origin: 0% 0%;
 }
+.CodeMirror pre {
+    white-space: pre-wrap;
+    word-break: break-all;
+    word-wrap: break-word;
+}
+/* div { */
+/*     resize: both; */
+/* } */

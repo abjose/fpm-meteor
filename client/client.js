@@ -217,7 +217,7 @@ Template.textbox.helpers({
   },
 
   initEditor: function() {
-    var editor = CodeMirror(document.getElementById("project_area"), {
+    var editor = CodeMirror(Template.instance().firstNode, {
       value: this.text,
       mode:  "markdown",
       theme: "default",
@@ -225,19 +225,17 @@ Template.textbox.helpers({
       extraKeys: {"Enter": "newlineAndIndentContinueMarkdownList"},
     });
 
-    var screen_pt = WorldToScreen(this);
-    console.log(screen_pt);
     var wrapper = editor.getWrapperElement();
-    wrapper.style.position = "absolute";
-    wrapper.style.left = screen_pt.x + "px";
-    wrapper.style.top  = screen_pt.y + "px";
-    editor.setSize(this.w, this.h);
+    //var screen_pt = WorldToScreen(this);
+    //wrapper.style.position = "absolute";
+    //wrapper.style.left = screen_pt.x + "px";
+    //wrapper.style.top  = screen_pt.y + "px";
+    //editor.setSize(this.w, this.h);
+    editor.setSize(250, 250);
 
     var edit_mode = Template.instance().edit_mode;
     var self = this;
     editor.on('blur', function() {
-      console.log(editor.getValue());
-      //console.log(e.target.value);
       Entities.update( self._id, { $set: { text: editor.getValue() }});
       wrapper.parentNode.removeChild(wrapper);
       edit_mode.set(false);
