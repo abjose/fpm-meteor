@@ -54,6 +54,15 @@ Meteor.startup(function() {
     Session.set("drag_pt", {x: world_pt.x, y: world_pt.y});
     Session.set("initial_view", Session.get("view"));
     Session.set("dragging", true);
+
+    // Conditionally clear selection if clicked canvas or background
+    // TODO: a bit simplistic
+    if (e.which == 1) {
+      var name = e.target.localName;
+      if (name == "body" || name == "canvas") {
+	Session.set("selected", {});
+      }
+    }
   }
 
   window.onmousemove = function(e) {
@@ -184,8 +193,9 @@ Template.textbox.helpers({
   tx: function() {
     // TODO: how to combine tx and ty so only have to do once?
     var screen_pt;
+    var editing = Template.instance().edit_mode.get();
     if (Session.get("dragging") && Session.get("dragging_entity")
-	&& Session.get("selected")[this._id]) {
+	&& this._id in Session.get("selected") && !editing) {
       var cp = Session.get('click_pt');
       var dp = Session.get('drag_pt');
       screen_pt = WorldToScreen({x: this.x + dp.x - cp.x,
@@ -198,8 +208,9 @@ Template.textbox.helpers({
 
   ty: function() {
     var screen_pt;
+    var editing = Template.instance().edit_mode.get();
     if (Session.get("dragging") && Session.get("dragging_entity")
-	&& Session.get("selected")[this._id]) {
+	&& this._id in Session.get("selected") && !editing) {
       var cp = Session.get('click_pt');
       var dp = Session.get('drag_pt');
       screen_pt = WorldToScreen({x: this.x + dp.x - cp.x,
@@ -211,7 +222,10 @@ Template.textbox.helpers({
   },
 
   // TODO: add stuff for width and height
-
+  selected: function() {
+    return this._id in Session.get("selected");
+  },
+  
   editing: function() {
     return Template.instance().edit_mode.get();
   },
@@ -243,10 +257,15 @@ Template.textbox.events({
     if (e.which == 1) {  // left click
       Session.set("dragging_entity", true);
       var s = Session.get("selected");
-      //s[this._id] = !s[this._id];  // works if undefined
-      // ehh
-      s = {};
-      s[this._id] = true;
+      var selected = Object.keys(s);
+      if (e.ctrlKey || selected.length == 0) {
+	s[this._id] = true;
+      } else {
+	if (!(this._id in s)) {
+	  s = {};  // if unselected, want to deselect others
+	}
+	s[this._id] = !s[this._id];
+      }
       Session.set("selected", s);
     } else if (e.which == 2) {  // center click
       var selected = Object.keys(Session.get("selected"));

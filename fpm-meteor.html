@@ -89,6 +89,7 @@
 <template name="textbox">
   <div class="testdiv"
        style="top:{{ty}}px; left:{{tx}}px;
+	      {{#if selected}}border-color: red;{{/if}}
 	      transform: scale({{scale}}, {{scale}});
 	      -webkit-transform: scale({{scale}}, {{scale}});">
     {{#if editing}}
