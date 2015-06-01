@@ -217,29 +217,24 @@ Template.textbox.helpers({
   },
 
   initEditor: function() {
-    var editor = CodeMirror(Template.instance().firstNode, {
-      value: this.text,
-      mode:  "markdown",
-      theme: "default",
-      autofocus: true,
-      extraKeys: {"Enter": "newlineAndIndentContinueMarkdownList"},
-    });
-
-    var wrapper = editor.getWrapperElement();
-    //var screen_pt = WorldToScreen(this);
-    //wrapper.style.position = "absolute";
-    //wrapper.style.left = screen_pt.x + "px";
-    //wrapper.style.top  = screen_pt.y + "px";
-    //editor.setSize(this.w, this.h);
-    editor.setSize(250, 250);
-
+    var editor = document.createElement('textarea');
+    editor.setAttribute('class', 'textbox-editing');
+    editor.value = this.text;
+    editor.style.width  = this.w+"px";
+    editor.style.height = this.h+"px";
+    
     var edit_mode = Template.instance().edit_mode;
     var self = this;
-    editor.on('blur', function() {
-      Entities.update( self._id, { $set: { text: editor.getValue() }});
-      wrapper.parentNode.removeChild(wrapper);
+    editor.onblur = function() {
+      Entities.update( self._id, { $set: { text: editor.value }});
+      editor.parentNode.removeChild(editor);
       edit_mode.set(false);
-    });
+    };
+    
+    var old_child = Template.instance().firstNode;
+    //old_child.parentNode.replaceChild(editor, old_child);
+    old_child.appendChild(editor);
+    editor.focus();
   },
 });
 
