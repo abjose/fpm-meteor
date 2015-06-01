@@ -57,12 +57,8 @@ body {
     margin: 0px;
     padding: 0px;
     border: thin black solid;
+    border-color: red;
     transform-origin: 0% 0%;
-}
-.CodeMirror pre {
-    white-space: pre-wrap;
-    word-break: break-all;
-    word-wrap: break-word;
 }
 /* div { */
 /*     resize: both; */
