@@ -50,14 +50,16 @@ body {
     padding: 0px;
     border: thin black solid;
     transform-origin: 0% 0%;
-    resize: both;
+    /* resize: both; */
 }
 .textbox-editing  {
     position: absolute;
     margin: 0px;
     padding: 0px;
-    border: thin black solid;
-    border-color: red;
+    /* border: thin black solid;  */
+    border: none;
+    background-color: #D0D0FF;
+    /* border-color: red; */
     transform-origin: 0% 0%;
 }
 /* div { */

@@ -87,17 +87,12 @@
 </template>
 
 <template name="textbox">
-  <div class="testdiv"
-       style="top:{{ty}}px; left:{{tx}}px; width: {{w}}; height: {{h}};
-	      {{#if selected}}border-color: red;{{/if}}
-	      transform: scale({{scale}}, {{scale}});
-	      -webkit-transform: scale({{scale}}, {{scale}});">
-    {{#if editing}}
-      {{initEditor}}
-    {{else}}
-      {{#markdown}}{{text}}{{/markdown}}
-    {{/if}}
-  </div>
+  <textarea class="textbox-editing"
+	    style="top:{{ty}}px; left:{{tx}}px; width: {{w}}; height: {{h}};
+		   transform: scale({{scale}}, {{scale}});
+		   -webkit-transform: scale({{scale}}, {{scale}});">
+    {{text}}
+  </textarea>
 </template>
 
 <template name="edge">

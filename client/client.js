@@ -19,8 +19,6 @@ Session.setDefault("dragging_entity", false);
 Session.setDefault("click_pt", {x: 0, y: 0});
 Session.setDefault("drag_pt", {x: 0, y: 0});
 Session.setDefault("project_id", undefined);
-Session.setDefault("mode", 'navigate');
-
 
 Router.route("/:project/", function () {
   // Is calling a meteor method here bad practice?
@@ -58,7 +56,6 @@ Meteor.startup(function() {
       }
     }
 
-    if (Session.get("mode") == "edit") return;
     // TODO: consider finding better place to do this transform
     // currently have to convert back to screen coords in textbox helper
     var world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
@@ -69,7 +66,6 @@ Meteor.startup(function() {
   }
 
   window.onmousemove = function(e) {
-    if (Session.get("mode") == "edit") return;
     var world_pt;
     // TODO: clean this up...
     if (Session.get("dragging") && !Session.get("dragging_entity")) {
@@ -90,7 +86,6 @@ Meteor.startup(function() {
   }
 
   window.onmouseup = function() {
-    if (Session.get("mode") == "edit") return;
     if (Session.get("dragging_entity")) {
       var ids = Object.keys(Session.get("selected"));
       var cp = Session.get('click_pt');
@@ -112,19 +107,6 @@ Meteor.startup(function() {
   window.ondblclick = function(e) {
     //var world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
     //create_textbox(world_pt.x, world_pt.y, 50, 50, "test");
-  }
-
-  window.onkeydown = function(e) {
-    switch (e.keyCode) {
-    case 49:
-      Session.set("mode", "edit");
-      console.log("edit mode");
-      break;
-    case 50:
-      Session.set("mode", "navigate");
-      console.log("navigate mode");
-      break;
-    }
   }
 
   document.addEventListener('wheel', function(e) {
@@ -198,7 +180,7 @@ Template.entity.helpers({
 });
 
 Template.textbox.created = function() {
-  this.edit_mode = new ReactiveVar(false);
+  //this.edit_mode = new ReactiveVar(false);
 }
 
 Template.textbox.helpers({
@@ -210,9 +192,9 @@ Template.textbox.helpers({
   tx: function() {
     // TODO: how to combine tx and ty so only have to do once?
     var screen_pt;
-    var editing = Template.instance().edit_mode.get();
+    //var editing = Template.instance().edit_mode.get();
     if (Session.get("dragging") && Session.get("dragging_entity")
-	&& this._id in Session.get("selected") && !editing) {
+	&& this._id in Session.get("selected")) {
       var cp = Session.get('click_pt');
       var dp = Session.get('drag_pt');
       screen_pt = WorldToScreen({x: this.x + dp.x - cp.x,
@@ -225,9 +207,9 @@ Template.textbox.helpers({
 
   ty: function() {
     var screen_pt;
-    var editing = Template.instance().edit_mode.get();
+    //var editing = Template.instance().edit_mode.get();
     if (Session.get("dragging") && Session.get("dragging_entity")
-	&& this._id in Session.get("selected") && !editing) {
+	&& this._id in Session.get("selected")) {
       var cp = Session.get('click_pt');
       var dp = Session.get('drag_pt');
       screen_pt = WorldToScreen({x: this.x + dp.x - cp.x,
@@ -238,54 +220,23 @@ Template.textbox.helpers({
     return screen_pt.y;
   },
 
-  // TODO: add stuff for width and height
   selected: function() {
     return this._id in Session.get("selected");
-  },
-  
-  editing: function() {
-    return Template.instance().edit_mode.get();
-  },
-
-  initEditor: function() {
-    var editor = document.createElement('textarea');
-    editor.setAttribute('class', 'textbox-editing');
-    editor.value = this.text;
-    editor.style.width  = this.w+"px";
-    editor.style.height = this.h+"px";
-    
-    var edit_mode = Template.instance().edit_mode;
-    var self = this;
-    editor.onblur = function() {
-      Entities.update( self._id,
-		       { $set: { text: editor.value,
-			         w: editor.style.width,
-			         h: editor.style.height, }});
-      editor.parentNode.removeChild(editor);
-      edit_mode.set(false);
-    };
-    
-    var old_child = Template.instance().firstNode;
-    //old_child.parentNode.replaceChild(editor, old_child);
-    old_child.appendChild(editor);
-    editor.focus();
   },
 });
 
 Template.textbox.events({
   "mousedown": function(e, template) {
-    if (e.which == 1) {  // left click
+    if (!e.ctrlKey) {
+      // Keep from dragging world when editing textbox.
+      // But don't if we're trying to drag the textbox.
+      e.stopPropagation();
+    }
+    
+    if (e.which == 1 && e.ctrlKey) {  // left click
       Session.set("dragging_entity", true);
-      var s = Session.get("selected");
-      var selected = Object.keys(s);
-      if (e.ctrlKey || selected.length == 0) {
-	s[this._id] = true;
-      } else {
-	if (!(this._id in s)) {
-	  s = {};  // if unselected, want to deselect others
-	}
-	s[this._id] = !s[this._id];
-      }
+      s = {};
+      s[this._id] = true;
       Session.set("selected", s);
     } else if (e.which == 2) {  // center click
       var selected = Object.keys(Session.get("selected"));
@@ -297,11 +248,10 @@ Template.textbox.events({
     }
   },
 
-  "dblclick": function(e, template) {
-    if (Session.get("mode") == "edit") {
-      template.edit_mode.set(true);
-    }
-  },
+  "mouseup": function(e, template) {
+    Entities.update( this._id, { $set: { w: e.target.style.width,
+					 h: e.target.style.height, }});
+  }
 });
 
 Template.edge.helpers({
