@@ -19,6 +19,8 @@ Session.setDefault("dragging_entity", false);
 Session.setDefault("click_pt", {x: 0, y: 0});
 Session.setDefault("drag_pt", {x: 0, y: 0});
 Session.setDefault("project_id", undefined);
+Session.setDefault("mode", 'navigate');
+
 
 Router.route("/:project/", function () {
   // Is calling a meteor method here bad practice?
@@ -47,14 +49,6 @@ Tracker.autorun(function() {
 // TODO: maybe don't use window-level events.
 Meteor.startup(function() {
   window.onmousedown = function(e) {
-    // TODO: consider finding better place to do this transform
-    // currently have to convert back to screen coords in textbox helper
-    var world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
-    Session.set("click_pt", {x: world_pt.x, y: world_pt.y});
-    Session.set("drag_pt", {x: world_pt.x, y: world_pt.y});
-    Session.set("initial_view", Session.get("view"));
-    Session.set("dragging", true);
-
     // Conditionally clear selection if clicked canvas or background
     // TODO: a bit simplistic
     if (e.which == 1) {
@@ -63,9 +57,19 @@ Meteor.startup(function() {
 	Session.set("selected", {});
       }
     }
+
+    if (Session.get("mode") == "edit") return;
+    // TODO: consider finding better place to do this transform
+    // currently have to convert back to screen coords in textbox helper
+    var world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
+    Session.set("click_pt", {x: world_pt.x, y: world_pt.y});
+    Session.set("drag_pt", {x: world_pt.x, y: world_pt.y});
+    Session.set("initial_view", Session.get("view"));
+    Session.set("dragging", true);
   }
 
   window.onmousemove = function(e) {
+    if (Session.get("mode") == "edit") return;
     var world_pt;
     // TODO: clean this up...
     if (Session.get("dragging") && !Session.get("dragging_entity")) {
@@ -86,6 +90,7 @@ Meteor.startup(function() {
   }
 
   window.onmouseup = function() {
+    if (Session.get("mode") == "edit") return;
     if (Session.get("dragging_entity")) {
       var ids = Object.keys(Session.get("selected"));
       var cp = Session.get('click_pt');
@@ -109,6 +114,19 @@ Meteor.startup(function() {
     //create_textbox(world_pt.x, world_pt.y, 50, 50, "test");
   }
 
+  window.onkeydown = function(e) {
+    switch (e.keyCode) {
+    case 49:
+      Session.set("mode", "edit");
+      console.log("edit mode");
+      break;
+    case 50:
+      Session.set("mode", "navigate");
+      console.log("navigate mode");
+      break;
+    }
+  }
+
   document.addEventListener('wheel', function(e) {
     var view = Session.get("view");
     if (e.deltaY > 0) {
@@ -118,7 +136,6 @@ Meteor.startup(function() {
     }
     Session.set("view", view);
   }, false);
-
 
   // Update paperjs view based on changes to relevant Session variables.
   Tracker.autorun(function() {
@@ -240,7 +257,10 @@ Template.textbox.helpers({
     var edit_mode = Template.instance().edit_mode;
     var self = this;
     editor.onblur = function() {
-      Entities.update( self._id, { $set: { text: editor.value }});
+      Entities.update( self._id,
+		       { $set: { text: editor.value,
+			         w: editor.style.width,
+			         h: editor.style.height, }});
       editor.parentNode.removeChild(editor);
       edit_mode.set(false);
     };
@@ -278,7 +298,9 @@ Template.textbox.events({
   },
 
   "dblclick": function(e, template) {
-    template.edit_mode.set(true);
+    if (Session.get("mode") == "edit") {
+      template.edit_mode.set(true);
+    }
   },
 });
 
