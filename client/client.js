@@ -251,7 +251,11 @@ Template.textbox.events({
   "mouseup": function(e, template) {
     Entities.update( this._id, { $set: { w: e.target.style.width,
 					 h: e.target.style.height, }});
-  }
+  },
+
+  "wheel": function(e, template) {
+    e.stopPropagation();
+  },
 });
 
 Template.edge.helpers({
