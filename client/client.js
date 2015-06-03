@@ -259,6 +259,10 @@ Template.textbox.events({
       e.stopPropagation();
     }
   },
+
+  "blur": function(e, template) {
+    Entities.update( this._id, { $set: { text: e.target.value }});
+  },
 });
 
 Template.edge.helpers({
