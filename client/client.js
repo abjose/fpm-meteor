@@ -254,7 +254,10 @@ Template.textbox.events({
   },
 
   "wheel": function(e, template) {
-    e.stopPropagation();
+    // Only prevent zooming if the textbox has a visible scrollbar.
+    if (e.target.scrollHeight > e.target.clientHeight) {
+      e.stopPropagation();
+    }
   },
 });
 
