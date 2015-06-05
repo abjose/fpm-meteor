@@ -326,7 +326,31 @@ Template.project_link.helpers({
     }
     return screen_pt.y;
   },
+});
 
+// TODO: Don't repeat yourself...
+Template.project_link.events({
+  "mousedown": function(e, template) {
+    if (!e.ctrlKey) {
+      // Keep from dragging world when editing textbox.
+      // But don't if we're trying to drag the textbox.
+      e.stopPropagation();
+    }
+    
+    if (e.which == 1 && e.ctrlKey) {  // left click
+      Session.set("dragging_entity", true);
+      s = {};
+      s[this._id] = true;
+      Session.set("selected", s);
+    } else if (e.which == 2) {  // center click
+      var selected = Object.keys(Session.get("selected"));
+      if (selected.length == 1) {
+	// Create or destroy edge.
+	Meteor.call('setEdge', selected[0], this._id,
+		    Session.get("project_id"));
+      }
+    }
+  },
 });
 
 Template.edge.helpers({
