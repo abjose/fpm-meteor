@@ -19,6 +19,7 @@ Session.setDefault("dragging_entity", false);
 Session.setDefault("click_pt", {x: 0, y: 0});
 Session.setDefault("drag_pt", {x: 0, y: 0});
 Session.setDefault("project_id", undefined);
+Session.setDefault("tool", "text");
 
 Router.route("/:project/", function () {
   // Is calling a meteor method here bad practice?
@@ -154,9 +155,21 @@ Template.projectInfo.helpers({
 
 Template.toolbar.helpers({
   tools: function() {
-    return [{name: "tool1"}, {name: "tool2"}, {name: "tool3"}];
+    return [{name: "text"}, {name: "project"}];
   },
   
+});
+
+Template.toolbarItem.helpers({
+  isSelected: function() {
+    return Session.get("tool") == this.name;
+  },
+});
+
+Template.toolbarItem.events({
+  "click": function(e, template) {
+    Session.set("tool", template.data.name);
+  },
 });
 
 Template.project.helpers({

@@ -65,7 +65,7 @@
 
 <template name="toolbarItem">
   <!-- oh god better name please? maybe just 'tool' -->
-  <div class="toolbarItem">
+  <div class="toolbarItem{{#if isSelected}}-selected{{/if}}">
     {{ name }}
   </div>
 </template>
@@ -88,11 +88,18 @@
 
 <template name="textbox">
   <textarea class="textbox-editing"
-	    style="top:{{ty}}px; left:{{tx}}px; width: {{w}}; height: {{h}};
-		   transform: scale({{scale}}, {{scale}});
-		   -webkit-transform: scale({{scale}}, {{scale}});">{{text}}</textarea>
+  	    style="top:{{ty}}px; left:{{tx}}px; width: {{w}}; height: {{h}};
+  		   transform: scale({{scale}}, {{scale}});
+  		   -webkit-transform: scale({{scale}}, {{scale}});">{{text}}</textarea>  
 </template>
 
 <template name="edge">
   {{ draw }}
+</template>
+
+<template name="project_link">
+  <div class="...">
+    <!-- don't need full link!! -->
+    <a href="/root?x=250&y=250&scale=1">root</a>
+  </div>
 </template>
