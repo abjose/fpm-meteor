@@ -106,8 +106,19 @@ Meteor.startup(function() {
   }
 
   window.ondblclick = function(e) {
-    //var world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
-    //create_textbox(world_pt.x, world_pt.y, 50, 50, "test");
+    var world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
+    switch (Session.get("tool")) {
+    case "text":
+      create_textbox(world_pt.x, world_pt.y, 50, 50, "insert text");
+      break;
+    case "project":
+      var link = prompt("link");
+      create_project_link(world_pt.x, world_pt.y, link)
+      break;
+    default:
+      console.log("Tool not found:", Session.get("tool"));
+      break;
+    }
   }
 
   document.addEventListener('wheel', function(e) {
@@ -188,6 +199,7 @@ Template.entity.helpers({
     switch(this.type){
     case 'textbox':   return Template.textbox;
     case 'edge': return Template.edge;
+    case 'project_link': return Template.project_link;
     }
   }
 });
@@ -278,6 +290,45 @@ Template.textbox.events({
   },
 });
 
+Template.project_link.helpers({
+  scale: function() {
+    var view = Session.get("view");
+    return view.scale;
+  },
+
+  tx: function() {
+    // TODO: how to combine tx and ty so only have to do once?
+    var screen_pt;
+    //var editing = Template.instance().edit_mode.get();
+    if (Session.get("dragging") && Session.get("dragging_entity")
+	&& this._id in Session.get("selected")) {
+      var cp = Session.get('click_pt');
+      var dp = Session.get('drag_pt');
+      screen_pt = WorldToScreen({x: this.x + dp.x - cp.x,
+				 y: this.y + dp.y - cp.y});
+    } else {
+      screen_pt = WorldToScreen(this);
+    }
+    return screen_pt.x;
+  },
+
+  ty: function() {
+    var screen_pt;
+    //var editing = Template.instance().edit_mode.get();
+    if (Session.get("dragging") && Session.get("dragging_entity")
+	&& this._id in Session.get("selected")) {
+      var cp = Session.get('click_pt');
+      var dp = Session.get('drag_pt');
+      screen_pt = WorldToScreen({x: this.x + dp.x - cp.x,
+				 y: this.y + dp.y - cp.y});
+    } else {
+      screen_pt = WorldToScreen(this);
+    }
+    return screen_pt.y;
+  },
+
+});
+
 Template.edge.helpers({
   draw: function() {
     if (!Session.get("init_paper")) return;
@@ -325,6 +376,15 @@ function create_textbox(x, y, w, h, text) {
     x: x - w/2, y: y - h/2, w: w, h: h, text: text,
     type: "textbox", project: Session.get("project_id"),
   });
+}
+
+function create_project_link(x, y, link) {
+  // args should be in world coords
+  Entities.insert({
+    x: x, y: y, project_link: link,
+    type: "project_link", project: Session.get("project_id"),
+  });
+
 }
 
 // stuff for getting edge point - move to edge model file
