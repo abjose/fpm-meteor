@@ -8,7 +8,9 @@ if(Meteor.isServer) {
     // TODO: make project if nonexistent
     getProjectID: function(title) {
       var project = Projects.find({ title: title });
-      if (project.count() == 0) console.log("PROJECT NOT FOUND!");
+      if (project.count() == 0) {
+	Projects.insert({ title: title });
+      }
       return project.fetch()[0]._id;
     },
 
