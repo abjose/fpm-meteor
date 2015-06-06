@@ -363,7 +363,9 @@ Template.project_link.events({
   "dblclick": function(e, template) {
     e.stopPropagation();
     var link = prompt("link", this.project_link);
-    if (link != null) {
+    if (link == "") {
+      Entities.remove(this._id);
+    } else if (link != null) {
       Entities.update(this._id, { $set: { project_link: link }});
     }
   },
