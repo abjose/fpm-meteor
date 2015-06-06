@@ -112,8 +112,7 @@ Meteor.startup(function() {
       create_textbox(world_pt.x, world_pt.y, 50, 50, "insert text");
       break;
     case "project":
-      var link = prompt("link");
-      create_project_link(world_pt.x, world_pt.y, link)
+      create_project_link(world_pt.x, world_pt.y, "null")
       break;
     default:
       console.log("Tool not found:", Session.get("tool"));
@@ -351,6 +350,14 @@ Template.project_link.events({
       }
     }
   },
+
+  "dblclick": function(e, template) {
+    e.stopPropagation();
+    var link = prompt("link", this.project_link);
+    if (link != null) {
+      Entities.update(this._id, { $set: { project_link: link }});
+    }
+  },
 });
 
 Template.edge.helpers({
@@ -408,7 +415,6 @@ function create_project_link(x, y, link) {
     x: x, y: y, project_link: link,
     type: "project_link", project: Session.get("project_id"),
   });
-
 }
 
 // stuff for getting edge point - move to edge model file
