@@ -325,6 +325,11 @@ Template.project_link.helpers({
     }
     return screen_pt.y;
   },
+
+  project_name: function() {
+    // parse out project name to display as link text
+    return this.project_link.split('?')[0];
+  }
 });
 
 // TODO: Don't repeat yourself...
