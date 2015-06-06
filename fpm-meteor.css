@@ -71,7 +71,7 @@ body {
 .project_link  {
     position: absolute;
     /* margin: 0px; */
-    /* padding: 0px; */
+    padding: 10px 20px;
     border: thin black solid;
     background-color: #D0FFD0;
     transform-origin: 0% 0%;
