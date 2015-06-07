@@ -23,7 +23,8 @@ Session.setDefault("tool", "text");
 
 Router.route("/:project/", function () {
   // Is calling a meteor method here bad practice?
-  Meteor.call("getProjectID", this.params.project,  function(error, result){
+  Meteor.call("getProjectID", this.params.project,  function(error, result) {
+    if (error) console.log("Error routing to project.");
     Session.set("project_id", result);
   });
   var query = this.params.query;
@@ -332,7 +333,9 @@ Template.project_link.helpers({
 
   project_name: function() {
     // parse out project name to display as link text
-    return this.project_link.split('?')[0];
+    var a = document.createElement('a');
+    a.href = this.project_link;
+    return a.pathname.slice(1, a.pathname.length);
   }
 });
 
@@ -362,11 +365,19 @@ Template.project_link.events({
 
   "dblclick": function(e, template) {
     e.stopPropagation();
-    var link = prompt("link", this.project_link);
-    if (link == "") {
+    var url = prompt("url", this.project_link);
+    if (url == "") {
       Entities.remove(this._id);
-    } else if (link != null) {
-      Entities.update(this._id, { $set: { project_link: link }});
+    } else if (url != null) {
+      var a = document.createElement('a');
+      a.href = url;
+      var target_project_name = a.pathname.slice(1, a.pathname.length);
+      var self = this;
+      Meteor.call("getProjectID", target_project_name, function(error, result) {
+        if (error) console.log("Error updating project link.");
+        Entities.update(self._id, { $set: { project_link: url,
+					    target_project: result }});
+      });
     }
   },
 });
@@ -423,7 +434,7 @@ function create_textbox(x, y, w, h, text) {
 function create_project_link(x, y, link) {
   // args should be in world coords
   Entities.insert({
-    x: x, y: y, project_link: link,
+    x: x, y: y, project_link: link, target_project: null,
     type: "project_link", project: Session.get("project_id"),
   });
 }
