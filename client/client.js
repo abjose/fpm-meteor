@@ -142,11 +142,25 @@ Meteor.startup(function() {
 Template.fpm.helpers({
   currentProject: function() {
     var project = Projects.find({ _id: Session.get("project_id") });
-    // if (project.count() == 0) console.log("No currentProject found.");
+    if (project.count() == 0) console.log("No currentProject found.");
     if (project.count() > 1) console.log("Multiple current projects found...");
     return project;
   },
 });
+
+Template.projectInfo.created = function() {
+  var self = this;
+  self.backref_list = new ReactiveVar([]);
+  Tracker.autorun(function() {
+    Meteor.call("getBackrefs", Session.get("project_id"), function(err, refs) {
+      // TODO: need to make this react to changes to project_links subset of
+      // entities.
+      if (err) console.log(err);
+      else self.backref_list.set(refs);
+      console.log(refs);
+    });
+  });
+}
 
 Template.projectInfo.helpers({
   projectTitle: function() {
@@ -161,7 +175,11 @@ Template.projectInfo.helpers({
   attributes: function() {
     // better name? why not just mix with tags?
     return {attr1: 5, attr2:0.1, animalsound: 'woof'};
-  },  
+  },
+
+  backrefs: function() {
+    return Template.instance().backref_list.get();
+  }
 });
 
 Template.toolbar.helpers({
@@ -333,6 +351,7 @@ Template.project_link.helpers({
 
   project_name: function() {
     // parse out project name to display as link text
+    // TODO: don't repeat yourself
     var a = document.createElement('a');
     a.href = this.project_link;
     return a.pathname.slice(1, a.pathname.length);

@@ -39,10 +39,8 @@
     {{> title }}
     <div class="projectInfo">
       <div> {{ projectTitle }} </div>
-      {{#each tags}}
-        {{> tag}}
-      {{/each}}
-      <div> backref1 backref2 </div>
+      {{#each tags}}{{> tag}}{{/each}}
+      <div>{{#each backrefs}}{{title}}{{/each}}</div>
     </div>
   </div>
 </template>
@@ -99,7 +97,7 @@
 
 <template name="project_link">
   <!-- don't need full link!! -->
-  <!-- <a href="/root?x=250&y=250&scale=1">root</a> -->
+  <!-- <a href="root?x=250&y=250&scale=1">root</a> -->
   <div class="project_link"
        style="top:{{ty}}px; left:{{tx}}px; width: {{w}}; height: {{h}};
   	      transform: scale({{scale}}, {{scale}});
