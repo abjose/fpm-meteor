@@ -151,6 +151,8 @@ Template.fpm.helpers({
 Template.projectInfo.created = function() {
   var self = this;
   self.backref_list = new ReactiveVar([]);
+  self.project_title = new ReactiveVar("");
+  
   Tracker.autorun(function() {
     Meteor.call("getBackrefs", Session.get("project_id"), function(err, refs) {
       // TODO: need to make this react to changes to project_links subset of
@@ -160,11 +162,19 @@ Template.projectInfo.created = function() {
       console.log(refs);
     });
   });
+
+  Tracker.autorun(function() {
+    var project = Session.get("project_id");
+    var project = Projects.find({ _id: project }).fetch();
+    if (project.length > 0) {
+      self.project_title.set(project[0].title);
+    }
+  });
 }
 
 Template.projectInfo.helpers({
   projectTitle: function() {
-    return "project title";
+    return Template.instance().project_title.get();
   },
   
   tags: function() {
