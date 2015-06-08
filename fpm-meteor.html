@@ -40,9 +40,13 @@
     <div class="projectInfo">
       <div> {{ projectTitle }} </div>
       {{#each tags}}{{> tag}}{{/each}}
-      <div>{{#each backrefs}}{{title}}{{/each}}</div>
+      <div>{{#each backrefs}}{{> backref}} | {{/each}}</div>
     </div>
   </div>
+</template>
+
+<template name="backref">
+  <a href="{{title}}">{{title}}</a>
 </template>
 
 <!-- why aren't they flush with top? -->
