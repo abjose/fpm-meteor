@@ -38,22 +38,24 @@
   <div id="topbar">
     {{> title }}
     <div class="projectInfo">
-      <div> {{ projectTitle }} </div>
-      {{#each tags}}{{> tag}}{{/each}}
+      <div>{{ projectTitle }}</div>
+      <div>{{#each tags}}{{> tag}}{{/each}}{{> add_tag}}</div>
       <div>{{#each backrefs}}{{> backref}} | {{/each}}</div>
     </div>
   </div>
 </template>
 
-<template name="backref">
-  <a href="{{title}}">{{title}}</a>
-</template>
-
 <!-- why aren't they flush with top? -->
 <template name="tag">
-  <div class="tag" contentEditable="true">
-    {{ title }}
-  </div>
+  {{#if hasValue}}<div class="tag">{{ key }}: {{value}}</div>{{else}}<div class="tag">{{ key }}</div>{{/if}}
+</template>
+
+<template name="add_tag">
+  <div class="tag">+</div>
+</template>
+
+<template name="backref">
+  <a href="{{title}}">{{title}}</a>
 </template>
 
 <template name="toolbar">

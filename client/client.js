@@ -152,6 +152,7 @@ Template.projectInfo.created = function() {
   var self = this;
   self.backref_list = new ReactiveVar([]);
   self.project_title = new ReactiveVar("");
+  self.project_tags = new ReactiveVar({});
   
   Tracker.autorun(function() {
     Meteor.call("getBackrefs", Session.get("project_id"), function(err, refs) {
@@ -159,7 +160,6 @@ Template.projectInfo.created = function() {
       // entities.
       if (err) console.log(err);
       else self.backref_list.set(refs);
-      console.log(refs);
     });
   });
 
@@ -170,26 +170,84 @@ Template.projectInfo.created = function() {
       self.project_title.set(project[0].title);
     }
   });
+  // TODO: don't repeat yourself
+  Tracker.autorun(function() {
+    var project = Session.get("project_id");
+    var project = Projects.find({ _id: project }).fetch();
+    if (project.length > 0) {
+      self.project_tags.set(project[0].tags);
+    }
+  });
 }
 
 Template.projectInfo.helpers({
   projectTitle: function() {
+    // TODO: more reasonable to just do this in data context of project object
     return Template.instance().project_title.get();
   },
   
   tags: function() {
-    // for tags could just have title value pair but value is undefined?
-    return [{title: 'tag1'}, {title: 'tag2'}, {title: 'tag3'}, {title: '+'}];
-  },
-
-  attributes: function() {
-    // better name? why not just mix with tags?
-    return {attr1: 5, attr2:0.1, animalsound: 'woof'};
+    // Parse tags object into list of {key:..., value:...} objects.
+    // TODO: Would be nice if didn't have to do this.
+    var tags = Template.instance().project_tags.get();
+    var keys = Object.keys(tags);
+    var tag_list = [];
+    for (var i = 0; i < keys.length; ++i) {
+      var key = keys[i];
+      var value = tags[key] || "";
+      tag_list.push({key: key, value: value});
+    }
+    console.log(tag_list);
+    return tag_list;
   },
 
   backrefs: function() {
     return Template.instance().backref_list.get();
   }
+});
+
+Template.tag.helpers({
+  hasValue: function() {
+    return this.value != null && this.value != "";
+  },
+});
+
+Template.tag.events({
+  "dblclick": function(e, template) {
+    // TODO: make this less ugly and don't repeat yourself.
+    var pid = Session.get("project_id");
+    if (pid == undefined) return;
+    var project = Projects.find({ _id: pid }).fetch();
+    if (project.length == 0) return;
+    project = project[0];
+    var tags = project.tags;
+
+    // Prompt for key and value
+    var key = prompt("key", this.key);
+    var value = prompt("value", this.value);
+    if (value == "") value = null;
+
+    // Update tags.
+    delete tags[this.key];
+    if (key != "") tags[key] = value;
+    Projects.update(pid, { $set: { tags: tags }});
+    return false;
+  },
+});
+
+Template.add_tag.events({
+  "dblclick": function(e, template) {
+    // TODO: make this less ugly.
+    var pid = Session.get("project_id");
+    if (pid == undefined) return;
+    var project = Projects.find({ _id: pid }).fetch();
+    if (project.length == 0) return;
+    project = project[0];
+    var tags = project.tags;
+    tags['newtag'] = null;
+    Projects.update(pid, { $set: { tags: tags }});
+    return false;
+  },
 });
 
 Template.toolbar.helpers({

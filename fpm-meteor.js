@@ -7,7 +7,7 @@ if(Meteor.isServer) {
     getProjectID: function(title) {
       var project = Projects.find({ title: title });
       if (project.count() == 0) {
-	Projects.insert({ title: title });
+	Projects.insert({ title: title, tags: {}, });
       }
       return project.fetch()[0]._id;
     },

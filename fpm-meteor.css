@@ -42,6 +42,7 @@ body {
 .tag {
     display: inline;
     border: thin black solid;
+    padding: 0em 0.25em;
     /*vertical-align: top;*/
     font-size: .8em;
 }
