@@ -353,6 +353,7 @@ Template.textbox.events({
       var selected = Object.keys(Session.get("selected"));
       if (selected.length == 1) {
 	// Create or destroy edge.
+	console.log("trying to set edge");
 	Meteor.call('setEdge', selected[0], this._id,
 		    Session.get("project_id"));
       }
@@ -360,8 +361,12 @@ Template.textbox.events({
   },
 
   "mouseup": function(e, template) {
-    Entities.update( this._id, { $set: { w: e.target.style.width,
-					 h: e.target.style.height, }});
+    var w = e.target.style.width;
+    var h = e.target.style.height;
+    var update = {};
+    if (w != "") update['w'] = parseInt(w);
+    if (h != "") update['h'] = parseInt(h);
+    Entities.update(this._id, { $set: update });
   },
 
   "wheel": function(e, template) {
@@ -482,7 +487,9 @@ Template.edge.helpers({
     var start_pt = {x: from_entity.x + from_entity.w / 2,
 		    y: from_entity.y + from_entity.h / 2};
     var end_pt = edge_terminal_pt(from_entity, to_entity);
-    this.paper_edge = drawVector(start_pt.x, start_pt.y, end_pt.x, end_pt.y);
+    if (end_pt != undefined) {
+      this.paper_edge = drawVector(start_pt.x, start_pt.y, end_pt.x, end_pt.y);
+    }
   },
 });
 
@@ -529,9 +536,10 @@ function create_project_link(x, y, link) {
 // stuff for getting edge point - move to edge model file
 function edge_terminal_pt(entity1, entity2) {
   // get centers
+  if (entity1 == undefined || entity2 == undefined) return;
   var c1 = {x: entity1.x + entity1.w / 2, y: entity1.y + entity1.h / 2};
   var c2 = {x: entity2.x + entity2.w / 2, y: entity2.y + entity2.h / 2};
-
+  
   var p1; var p2; var e1; var e2;
   // branch on relative location of centers (reduce to two intersections)
   if (c1.x > c2.x) {
