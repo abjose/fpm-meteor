@@ -197,7 +197,6 @@ Template.projectInfo.helpers({
       var value = tags[key] || "";
       tag_list.push({key: key, value: value});
     }
-    console.log(tag_list);
     return tag_list;
   },
 
