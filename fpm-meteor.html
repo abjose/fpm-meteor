@@ -7,12 +7,12 @@
   {{> fpm}}
 </body>
 
-<template name="canv">
-  <canvas id="canvas"></canvas>
-</template>
-
 <template name="fpm">
   {{> tools }}
+  {{> projectArea }}
+</template>
+
+<template name="projectArea">
   <div id="project_area">
     {{> canv }}
     <!-- can use "with" instead -->
@@ -22,10 +22,12 @@
   </div>
 </template>
 
+<template name="canv">
+  <canvas id="canvas"></canvas>
+</template>
+
 <template name="title">
-  <div id="titlebox">
-    <u>fpm</u>
-  </div>
+  <div id="titlebox"><u>fpm</u></div>
 </template>
 
 <template name="tools">

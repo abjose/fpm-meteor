@@ -106,21 +106,6 @@ Meteor.startup(function() {
     Session.set("dragging_entity", false);
   }
 
-  window.ondblclick = function(e) {
-    var world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
-    switch (Session.get("tool")) {
-    case "text":
-      create_textbox(world_pt.x, world_pt.y, 50, 50, "insert text");
-      break;
-    case "project":
-      create_project_link(world_pt.x, world_pt.y, "null")
-      break;
-    default:
-      console.log("Tool not found:", Session.get("tool"));
-      break;
-    }
-  }
-
   document.addEventListener('wheel', function(e) {
     var view = Session.get("view");
     if (e.deltaY > 0) {
@@ -139,12 +124,30 @@ Meteor.startup(function() {
   });
 });
 
-Template.fpm.helpers({
+Template.projectArea.helpers({
   currentProject: function() {
     var project = Projects.find({ _id: Session.get("project_id") });
     if (project.count() == 0) console.log("No currentProject found.");
     if (project.count() > 1) console.log("Multiple current projects found...");
     return project;
+  },
+});
+
+Template.projectArea.events({
+  "dblclick": function(e, template) {
+    var bb = e.currentTarget.getBoundingClientRect();
+    var world_pt = ScreenToWorld({x: e.clientX-bb.left, y: e.clientY-bb.top});
+    switch (Session.get("tool")) {
+    case "text":
+      create_textbox(world_pt.x, world_pt.y, 50, 50, "insert text");
+      break;
+    case "project":
+      create_project_link(world_pt.x, world_pt.y, "null")
+      break;
+    default:
+      console.log("Tool not found:", Session.get("tool"));
+      break;
+    }
   },
 });
 
@@ -381,6 +384,10 @@ Template.textbox.events({
     } else {
       Entities.update(this._id, { $set: { text: e.target.value }});
     }
+  },
+
+  "dblclick": function(e, template) {
+    e.stopPropagation();
   },
 });
 
