@@ -139,6 +139,7 @@ Template.projectArea.events({
     case "project":
       create_project_link(world_pt.x, world_pt.y, "null");
       break;
+    case "edge": break;
     default:
       console.log("Tool not found:", Session.get("tool"));
       break;
@@ -249,7 +250,7 @@ Template.add_tag.events({
 
 Template.toolbar.helpers({
   tools: function() {
-    return [{name: "text"}, {name: "project"}];
+    return [{name: "text"}, {name: "project"}, {name: "edge"}];
   },
   
 });
@@ -292,23 +293,20 @@ Template.entity.events({
     if (e.which == 1) {
       if (Session.get("tool") == "edge") {
 	var selected = Object.keys(Session.get("selected"));
-	// TODO: Handle this better...selection being set before this I guess...
-	// also will never work because always setting selection to self!
-      
-	console.log("got click");
-	if (selected.length == 0 || selected[0] == this._id) return;
-	// Create or destroy edge.
-	console.log(selected);
-	console.log("trying to set edge");
-	Meteor.call('setEdge', selected[0], this._id,
-		    Session.get("project_id"));
+	// TODO: allow self-edges, draw nicely.
+	if (selected.length > 0 && selected[0] != this._id) {
+	  // Create or destroy edge.
+	  Meteor.call('setEdge', selected[0], this._id,
+		      Session.get("project_id"));
+	  Session.set("selected", {});
+	  return;
+	}
+	// Set this entity as being selected.
+	// TODO: Better selections.
+	s = {};
+	s[this._id] = true;
+	Session.set("selected", s);
       }
-
-      // Set this entity as being selected.
-      // TODO: Better selections.
-      s = {};
-      s[this._id] = true;
-      Session.set("selected", s);
     }
   },
 
