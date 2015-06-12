@@ -9,8 +9,10 @@ Meteor.startup(function() {
 });
 
 Session.setDefault("initialized", false);  // ...
-Session.setDefault("init_paper", false);  // can be set true in startup instead?
+Session.setDefault("init_paper", false);  // set true in startup instead?
 Session.setDefault("selected", {});  // TODO: use ReactiveDict?
+// TODO: can maybe replace some of the other dragging-related Session vars.
+Session.setDefault("dragged_id", undefined);
 Session.setDefault("view", {x: 250, y: 250, scale: 1}); // view by center pt
 Session.setDefault("initial_view", {}); // lame
 Session.setDefault("screen", {w: 500, h: 500});
@@ -89,17 +91,10 @@ Meteor.startup(function() {
 
   window.onmouseup = function() {
     if (Session.get("dragging_entity")) {
-      var ids = Object.keys(Session.get("selected"));
       var cp = Session.get('click_pt');
       var dp = Session.get('drag_pt');
-      // TODO: think you can do this with one query, with multi: true.
-      for (var i = 0; i < ids.length; ++i) {
-	// TODO: move position calculation to separate function
-	// probably structure things better and have it in a file directly
-	// related to entity model
-	var res = Entities.update( ids[i],
-				  { $inc: { x: dp.x - cp.x, y: dp.y - cp.y }});
-      }
+      var res = Entities.update( Session.get("dragged_id"),
+				 { $inc: { x: dp.x - cp.x, y: dp.y - cp.y }});
     }
 
     Session.set("dragging", false);
@@ -142,7 +137,7 @@ Template.projectArea.events({
       create_textbox(world_pt.x, world_pt.y, 50, 50, "insert text");
       break;
     case "project":
-      create_project_link(world_pt.x, world_pt.y, "null")
+      create_project_link(world_pt.x, world_pt.y, "null");
       break;
     default:
       console.log("Tool not found:", Session.get("tool"));
@@ -292,6 +287,43 @@ Template.entity.helpers({
   }
 });
 
+Template.entity.events({
+  "click": function(e, template) {
+    if (e.which == 1) {
+      if (Session.get("tool") == "edge") {
+	var selected = Object.keys(Session.get("selected"));
+	// TODO: Handle this better...selection being set before this I guess...
+	// also will never work because always setting selection to self!
+      
+	console.log("got click");
+	if (selected.length == 0 || selected[0] == this._id) return;
+	// Create or destroy edge.
+	console.log(selected);
+	console.log("trying to set edge");
+	Meteor.call('setEdge', selected[0], this._id,
+		    Session.get("project_id"));
+      }
+
+      // Set this entity as being selected.
+      // TODO: Better selections.
+      s = {};
+      s[this._id] = true;
+      Session.set("selected", s);
+    }
+  },
+
+  "mousedown": function(e, template) {
+    if (e.ctrlKey) {
+      Session.set("dragging_entity", true);
+      Session.set("dragged_id", this._id);
+    } else {
+      // Keep from dragging world when editing entity,.
+      // but not if we're trying to drag it.
+      e.stopPropagation();
+    }
+  },
+});
+
 Template.textbox.created = function() {
   //this.edit_mode = new ReactiveVar(false);
 }
@@ -307,7 +339,7 @@ Template.textbox.helpers({
     var screen_pt;
     //var editing = Template.instance().edit_mode.get();
     if (Session.get("dragging") && Session.get("dragging_entity")
-	&& this._id in Session.get("selected")) {
+	&& Session.get("dragged_id") == this._id) {
       var cp = Session.get('click_pt');
       var dp = Session.get('drag_pt');
       screen_pt = WorldToScreen({x: this.x + dp.x - cp.x,
@@ -322,7 +354,7 @@ Template.textbox.helpers({
     var screen_pt;
     //var editing = Template.instance().edit_mode.get();
     if (Session.get("dragging") && Session.get("dragging_entity")
-	&& this._id in Session.get("selected")) {
+	&& Session.get("dragged_id") == this._id) {
       var cp = Session.get('click_pt');
       var dp = Session.get('drag_pt');
       screen_pt = WorldToScreen({x: this.x + dp.x - cp.x,
@@ -339,29 +371,6 @@ Template.textbox.helpers({
 });
 
 Template.textbox.events({
-  "mousedown": function(e, template) {
-    if (!e.ctrlKey) {
-      // Keep from dragging world when editing textbox.
-      // But don't if we're trying to drag the textbox.
-      e.stopPropagation();
-    }
-    
-    if (e.which == 1 && e.ctrlKey) {  // left click
-      Session.set("dragging_entity", true);
-      s = {};
-      s[this._id] = true;
-      Session.set("selected", s);
-    } else if (e.which == 2) {  // center click
-      var selected = Object.keys(Session.get("selected"));
-      if (selected.length == 1) {
-	// Create or destroy edge.
-	console.log("trying to set edge");
-	Meteor.call('setEdge', selected[0], this._id,
-		    Session.get("project_id"));
-      }
-    }
-  },
-
   "mouseup": function(e, template) {
     var w = e.target.style.width;
     var h = e.target.style.height;
@@ -402,7 +411,7 @@ Template.project_link.helpers({
     var screen_pt;
     //var editing = Template.instance().edit_mode.get();
     if (Session.get("dragging") && Session.get("dragging_entity")
-	&& this._id in Session.get("selected")) {
+	&& Session.get("dragged_id") == this._id) {
       var cp = Session.get('click_pt');
       var dp = Session.get('drag_pt');
       screen_pt = WorldToScreen({x: this.x + dp.x - cp.x,
@@ -417,7 +426,7 @@ Template.project_link.helpers({
     var screen_pt;
     //var editing = Template.instance().edit_mode.get();
     if (Session.get("dragging") && Session.get("dragging_entity")
-	&& this._id in Session.get("selected")) {
+	&& Session.get("dragged_id") == this._id) {
       var cp = Session.get('click_pt');
       var dp = Session.get('drag_pt');
       screen_pt = WorldToScreen({x: this.x + dp.x - cp.x,
@@ -439,28 +448,6 @@ Template.project_link.helpers({
 
 // TODO: Don't repeat yourself...
 Template.project_link.events({
-  "mousedown": function(e, template) {
-    if (!e.ctrlKey) {
-      // Keep from dragging world when editing textbox.
-      // But don't if we're trying to drag the textbox.
-      e.stopPropagation();
-    }
-    
-    if (e.which == 1 && e.ctrlKey) {  // left click
-      Session.set("dragging_entity", true);
-      s = {};
-      s[this._id] = true;
-      Session.set("selected", s);
-    } else if (e.which == 2) {  // center click
-      var selected = Object.keys(Session.get("selected"));
-      if (selected.length == 1) {
-	// Create or destroy edge.
-	Meteor.call('setEdge', selected[0], this._id,
-		    Session.get("project_id"));
-      }
-    }
-  },
-
   "dblclick": function(e, template) {
     e.stopPropagation();
     var url = prompt("url", this.project_link);
