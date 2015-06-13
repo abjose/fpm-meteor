@@ -285,7 +285,30 @@ Template.entity.helpers({
     case 'edge': return Template.edge;
     case 'project_link': return Template.project_link;
     }
-  }
+  },
+
+  position: function() {
+    var screen_pt;
+    if (Session.get("dragging") && Session.get("dragging_entity")
+	&& Session.get("dragged_id") == this._id) {
+      var cp = Session.get('click_pt');
+      var dp = Session.get('drag_pt');
+      screen_pt = WorldToScreen({x: this.x + dp.x - cp.x,
+				 y: this.y + dp.y - cp.y});
+    } else {
+      screen_pt = WorldToScreen(this);
+    }
+    return "top:" + screen_pt.y + "px; left:" + screen_pt.x + "px;";
+  },
+
+  scale: function() {
+    var view = Session.get("view");
+    return view.scale;
+  },
+
+  selected: function() {
+    return this._id in Session.get("selected");
+  },
 });
 
 Template.entity.events({
@@ -322,51 +345,7 @@ Template.entity.events({
   },
 });
 
-Template.textbox.created = function() {
-  //this.edit_mode = new ReactiveVar(false);
-}
-
-Template.textbox.helpers({
-  scale: function() {
-    var view = Session.get("view");
-    return view.scale;
-  },
-
-  tx: function() {
-    // TODO: how to combine tx and ty so only have to do once?
-    var screen_pt;
-    //var editing = Template.instance().edit_mode.get();
-    if (Session.get("dragging") && Session.get("dragging_entity")
-	&& Session.get("dragged_id") == this._id) {
-      var cp = Session.get('click_pt');
-      var dp = Session.get('drag_pt');
-      screen_pt = WorldToScreen({x: this.x + dp.x - cp.x,
-				 y: this.y + dp.y - cp.y});
-    } else {
-      screen_pt = WorldToScreen(this);
-    }
-    return screen_pt.x;
-  },
-
-  ty: function() {
-    var screen_pt;
-    //var editing = Template.instance().edit_mode.get();
-    if (Session.get("dragging") && Session.get("dragging_entity")
-	&& Session.get("dragged_id") == this._id) {
-      var cp = Session.get('click_pt');
-      var dp = Session.get('drag_pt');
-      screen_pt = WorldToScreen({x: this.x + dp.x - cp.x,
-				 y: this.y + dp.y - cp.y});
-    } else {
-      screen_pt = WorldToScreen(this);
-    }
-    return screen_pt.y;
-  },
-
-  selected: function() {
-    return this._id in Session.get("selected");
-  },
-});
+Template.textbox.inheritsHelpersFrom("entity");
 
 Template.textbox.events({
   "mouseup": function(e, template) {
@@ -398,43 +377,8 @@ Template.textbox.events({
   },
 });
 
+Template.project_link.inheritsHelpersFrom("entity");
 Template.project_link.helpers({
-  scale: function() {
-    var view = Session.get("view");
-    return view.scale;
-  },
-
-  tx: function() {
-    // TODO: how to combine tx and ty so only have to do once?
-    var screen_pt;
-    //var editing = Template.instance().edit_mode.get();
-    if (Session.get("dragging") && Session.get("dragging_entity")
-	&& Session.get("dragged_id") == this._id) {
-      var cp = Session.get('click_pt');
-      var dp = Session.get('drag_pt');
-      screen_pt = WorldToScreen({x: this.x + dp.x - cp.x,
-				 y: this.y + dp.y - cp.y});
-    } else {
-      screen_pt = WorldToScreen(this);
-    }
-    return screen_pt.x;
-  },
-
-  ty: function() {
-    var screen_pt;
-    //var editing = Template.instance().edit_mode.get();
-    if (Session.get("dragging") && Session.get("dragging_entity")
-	&& Session.get("dragged_id") == this._id) {
-      var cp = Session.get('click_pt');
-      var dp = Session.get('drag_pt');
-      screen_pt = WorldToScreen({x: this.x + dp.x - cp.x,
-				 y: this.y + dp.y - cp.y});
-    } else {
-      screen_pt = WorldToScreen(this);
-    }
-    return screen_pt.y;
-  },
-
   project_name: function() {
     // parse out project name to display as link text
     // TODO: don't repeat yourself
@@ -444,7 +388,6 @@ Template.project_link.helpers({
   }
 });
 
-// TODO: Don't repeat yourself...
 Template.project_link.events({
   "dblclick": function(e, template) {
     e.stopPropagation();

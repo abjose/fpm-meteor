@@ -92,8 +92,9 @@
 </template>
 
 <template name="textbox">
+  <!-- Possible to only style 'entity' template? -->
   <textarea class="textbox-editing"
-  	    style="top:{{ty}}px; left:{{tx}}px; width:{{w}}px; height:{{h}}px;
+	    style="{{position}} width:{{w}}px; height:{{h}}px;
   		   transform: scale({{scale}}, {{scale}});
   		   -webkit-transform: scale({{scale}}, {{scale}});">{{text}}</textarea>  
 </template>
@@ -106,7 +107,7 @@
   <!-- don't need full link!! -->
   <!-- <a href="root?x=250&y=250&scale=1">root</a> -->
   <div class="project_link"
-       style="top:{{ty}}px; left:{{tx}}px; width:{{w}}px; height:{{h}}px;
+       style="{{position}} width:{{w}}px; height:{{h}}px;
   	      transform: scale({{scale}}, {{scale}});
   	      -webkit-transform: scale({{scale}}, {{scale}});"><a href="{{project_link}}">{{project_name}}</a></div>
 </template>
