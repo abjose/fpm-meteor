@@ -70,6 +70,7 @@ Meteor.startup(function() {
   }
 
   window.onmousemove = function(e) {
+    if (Session.get("tool") == "draw") return;  // TODO: handle more elegantly
     var world_pt;
     // TODO: clean this up...
     if (Session.get("dragging") && !Session.get("dragging_entity")) {
@@ -144,6 +145,35 @@ Template.projectArea.events({
     default:
       console.log("Tool not found:", Session.get("tool"));
       break;
+    }
+  },
+
+  "mousedown": function(e, template) {
+    var tool = Session.get("tool");
+    if (tool == "draw") {
+      if (path) path.selected = false;
+
+      var world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
+      path = new paper.Path({
+        segments: [new paper.Point(world_pt.x, world_pt.y)],
+        strokeColor: 'black',
+        selected: true,
+      });
+    }
+  },
+
+  "mousemove": function(e, template) {
+    if (Session.get("dragging") && Session.get("tool") == "draw"
+	&& path != undefined) {
+      var world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
+      path.add(new paper.Point(world_pt.x, world_pt.y));
+    }
+  },
+
+  "mouseup": function(e, template) {
+    if (Session.get("tool") == "draw" && path != undefined) {
+      path.simplify();
+      //path.selected = true;
     }
   },
 });
@@ -251,7 +281,7 @@ Template.add_tag.events({
 
 Template.toolbar.helpers({
   tools: function() {
-    return [{name: "text"}, {name: "project"}, {name: "edge"}];
+    return [{name: "text"}, {name: "project"}, {name: "edge"}, {name: "draw"}];
   },
   
 });
@@ -412,6 +442,7 @@ Template.project_link.events({
 Template.edge.helpers({
   draw: function() {
     if (!Session.get("init_paper")) return;
+    // TODO: not sure setting edge like this makes sense?
     if (this.paper_edge != undefined) {
       this.paper_edge.remove();
     }
