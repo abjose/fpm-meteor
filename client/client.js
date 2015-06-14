@@ -128,10 +128,11 @@ Template.projectArea.helpers({
   },
 });
 
+var path;
+
 Template.projectArea.events({
   "dblclick": function(e, template) {
-    var bb = e.currentTarget.getBoundingClientRect();
-    var world_pt = ScreenToWorld({x: e.clientX-bb.left, y: e.clientY-bb.top});
+    var world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
     switch (Session.get("tool")) {
     case "text":
       create_textbox(world_pt.x, world_pt.y, 50, 50, "insert text");
@@ -540,9 +541,13 @@ function WorldToScreen(world_pt, view) {
 function ScreenToWorld(screen_pt, view) {
   if (view == undefined) view = Session.get('view');
   var screen = Session.get('screen');
+  // Get bounding box of project area to adjust for any offset in the document.
+  // Note that this step isn't required in WorldToScreen, as here screen_pt
+  // is relative to the document, whereas there it's relative to project_area.
+  var bb = document.getElementById("project_area").getBoundingClientRect();
   var view_corner = { x: view.x - (screen.w / view.scale) / 2,
 		      y: view.y - (screen.h / view.scale) / 2 };
-  return { x: screen_pt.x / view.scale + view_corner.x,
-	   y: screen_pt.y / view.scale + view_corner.y,
+  return { x: (screen_pt.x - bb.left) / view.scale + view_corner.x,
+	   y: (screen_pt.y - bb.top)  / view.scale + view_corner.y,
 	   scale: view.scale };
 }
