@@ -369,8 +369,8 @@ Template.entity.events({
       Session.set("dragging_entity", true);
       Session.set("dragged_id", this._id);
     } else {
-      // Keep from dragging world when editing entity,.
-      // but not if we're trying to drag it.
+      // Prevent dragging during text edits,
+      // unless we're trying to drag the entity.
       e.stopPropagation();
     }
   },
