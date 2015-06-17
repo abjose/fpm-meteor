@@ -437,6 +437,17 @@ Template.project_link.events({
       });
     }
   },
+
+  // Don't repeat yourself.
+  "mouseup": function(e, template) {
+    var w = e.target.style.width;
+    var h = e.target.style.height;
+    var update = {};
+    if (w != "") update["w"] = parseInt(w);
+    if (h != "") update["h"] = parseInt(h);
+    Entities.update(this._id, { $set: update });
+  },
+
 });
 
 Template.edge.helpers({
@@ -494,7 +505,7 @@ function create_textbox(x, y, w, h, text) {
 function create_project_link(x, y, link) {
   // args should be in world coords
   Entities.insert({
-    x: x, y: y, project_link: link, target_project: null,
+    x: x, y: y, w:40, h:20, project_link: link, target_project: null,
     type: "project_link", project: Session.get("project_id"),
   });
 }

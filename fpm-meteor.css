@@ -82,11 +82,11 @@ body {
 .project_link  {
     position: absolute;
     /* margin: 0px; */
+    resize: both;
+    overflow: auto;
+    text-align: center;
     padding: 10px 20px;
-    border: thin black solid;
+    /* border: thin black solid; */
     background-color: #D0FFD0;
     transform-origin: 0% 0%;
 }
-/* div { */
-/*     resize: both; */
-/* } */
