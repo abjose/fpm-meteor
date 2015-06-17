@@ -87,7 +87,6 @@
 <!-- probably should wrap tag template in another div -->
 
 <template name="entity">
-  <!-- TODO: branch to different kinds of entity -->
   {{> branchToEntity}}
 </template>
 
@@ -100,6 +99,10 @@
 </template>
 
 <template name="edge">
+  {{ draw }}
+</template>
+
+<template name="path">
   {{ draw }}
 </template>
 

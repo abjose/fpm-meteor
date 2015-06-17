@@ -157,7 +157,6 @@ Template.projectArea.events({
       path = new paper.Path({
         segments: [new paper.Point(world_pt.x, world_pt.y)],
         strokeColor: 'black',
-        selected: true,
       });
     }
   },
@@ -312,9 +311,10 @@ Template.project.helpers({
 Template.entity.helpers({
   branchToEntity: function(rsvp) {
     switch(this.type){
-    case 'textbox':   return Template.textbox;
-    case 'edge': return Template.edge;
-    case 'project_link': return Template.project_link;
+    case "textbox":   return Template.textbox;
+    case "edge": return Template.edge;
+    case "project_link": return Template.project_link;
+    case "path": return Template.path;
     }
   },
 
@@ -470,6 +470,15 @@ Template.edge.helpers({
   },
 });
 
+Template.path.helpers({
+  draw: function() {
+    if (!Session.get("init_paper")) return;
+    // TODO: not sure setting edge like this makes sense?
+    path = new paper.Path({
+      segments: this.points, strokeColor: 'black',
+    });
+  },
+});
 
 Template.canv.rendered = function() {
   //paper.setup(document.getElementById("canvas"));
@@ -507,6 +516,14 @@ function create_project_link(x, y, link) {
   Entities.insert({
     x: x, y: y, w:40, h:20, project_link: link, target_project: null,
     type: "project_link", project: Session.get("project_id"),
+  });
+}
+
+function create_path(points) {
+  // wait until after done drawing before insertion?
+  Entities.insert({
+    points: points,  // just an array of points
+    type: "path", project: Session.get("project_id"),
   });
 }
 
