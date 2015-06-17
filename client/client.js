@@ -322,8 +322,8 @@ Template.entity.helpers({
     var screen_pt;
     if (Session.get("dragging") && Session.get("dragging_entity")
 	&& Session.get("dragged_id") == this._id) {
-      var cp = Session.get('click_pt');
-      var dp = Session.get('drag_pt');
+      var cp = Session.get("click_pt");
+      var dp = Session.get("drag_pt");
       screen_pt = WorldToScreen({x: this.x + dp.x - cp.x,
 				 y: this.y + dp.y - cp.y});
     } else {
@@ -350,7 +350,7 @@ Template.entity.events({
 	// TODO: allow self-edges, draw nicely.
 	if (selected.length > 0 && selected[0] != this._id) {
 	  // Create or destroy edge.
-	  Meteor.call('setEdge', selected[0], this._id,
+	  Meteor.call("setEdge", selected[0], this._id,
 		      Session.get("project_id"));
 	  Session.set("selected", {});
 	  return;
@@ -383,8 +383,8 @@ Template.textbox.events({
     var w = e.target.style.width;
     var h = e.target.style.height;
     var update = {};
-    if (w != "") update['w'] = parseInt(w);
-    if (h != "") update['h'] = parseInt(h);
+    if (w != "") update["w"] = parseInt(w);
+    if (h != "") update["h"] = parseInt(h);
     Entities.update(this._id, { $set: update });
   },
 
@@ -413,7 +413,7 @@ Template.project_link.helpers({
   project_name: function() {
     // parse out project name to display as link text
     // TODO: don't repeat yourself
-    var a = document.createElement('a');
+    var a = document.createElement("a");
     a.href = this.project_link;
     return a.pathname.slice(1, a.pathname.length);
   }
@@ -426,7 +426,7 @@ Template.project_link.events({
     if (url == "") {
       Entities.remove(this._id);
     } else if (url != null) {
-      var a = document.createElement('a');
+      var a = document.createElement("a");
       a.href = url;
       var target_project_name = a.pathname.slice(1, a.pathname.length);
       var self = this;
@@ -570,8 +570,8 @@ function line_intersection(a, b, c, d) {
 }
 
 function WorldToScreen(world_pt, view) {
-  if (view == undefined) view = Session.get('view');
-  var screen = Session.get('screen');
+  if (view == undefined) view = Session.get("view");
+  var screen = Session.get("screen");
   // TODO: probably can reduce this so not explicitly calculating BB
   var view_corner = { x: view.x - (screen.w / view.scale) / 2,
 		      y: view.y - (screen.h / view.scale) / 2 };
@@ -581,8 +581,8 @@ function WorldToScreen(world_pt, view) {
 }
 
 function ScreenToWorld(screen_pt, view) {
-  if (view == undefined) view = Session.get('view');
-  var screen = Session.get('screen');
+  if (view == undefined) view = Session.get("view");
+  var screen = Session.get("screen");
   // Get bounding box of project area to adjust for any offset in the document.
   // Note that this step isn't required in WorldToScreen, as here screen_pt
   // is relative to the document, whereas there it's relative to project_area.
