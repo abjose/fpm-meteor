@@ -129,6 +129,7 @@ Template.projectArea.helpers({
   },
 });
 
+// TODO: would prefer not to have global path like this.
 var path;
 
 Template.projectArea.events({
@@ -151,11 +152,9 @@ Template.projectArea.events({
   "mousedown": function(e, template) {
     var tool = Session.get("tool");
     if (tool == "draw") {
-      if (path) path.selected = false;
-
       var world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
       path = new paper.Path({
-        segments: [new paper.Point(world_pt.x, world_pt.y)],
+        segments: [world_pt],
         strokeColor: 'black',
       });
     }
@@ -165,14 +164,15 @@ Template.projectArea.events({
     if (Session.get("dragging") && Session.get("tool") == "draw"
 	&& path != undefined) {
       var world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
-      path.add(new paper.Point(world_pt.x, world_pt.y));
+      path.add(world_pt);
     }
   },
 
   "mouseup": function(e, template) {
     if (Session.get("tool") == "draw" && path != undefined) {
       path.simplify();
-      //path.selected = true;
+      create_path(path.pathData);
+      path.remove();
     }
   },
 });
@@ -473,10 +473,8 @@ Template.edge.helpers({
 Template.path.helpers({
   draw: function() {
     if (!Session.get("init_paper")) return;
-    // TODO: not sure setting edge like this makes sense?
-    path = new paper.Path({
-      segments: this.points, strokeColor: 'black',
-    });
+    var foo = new paper.Path(this.pathData);
+    foo.strokeColor = "black";
   },
 });
 
@@ -519,10 +517,10 @@ function create_project_link(x, y, link) {
   });
 }
 
-function create_path(points) {
+function create_path(pathData) {
   // wait until after done drawing before insertion?
   Entities.insert({
-    points: points,  // just an array of points
+    pathData: pathData,
     type: "path", project: Session.get("project_id"),
   });
 }
