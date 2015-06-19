@@ -22,6 +22,7 @@ Session.setDefault("click_pt", {x: 0, y: 0});
 Session.setDefault("drag_pt", {x: 0, y: 0});
 Session.setDefault("project_id", undefined);
 Session.setDefault("tool", "text");
+Session.setDefault("drawing", false);
 
 Router.route("/:project/", function () {
   // Is calling a meteor method here bad practice?
@@ -66,11 +67,12 @@ Meteor.startup(function() {
     Session.set("click_pt", {x: world_pt.x, y: world_pt.y});
     Session.set("drag_pt", {x: world_pt.x, y: world_pt.y});
     Session.set("initial_view", Session.get("view"));
-    Session.set("dragging", true);
+    // TODO: handle more elegantly
+    if (Session.get("tool") != "draw") Session.set("dragging", true);
+
   }
 
   window.onmousemove = function(e) {
-    if (Session.get("tool") == "draw") return;  // TODO: handle more elegantly
     var world_pt;
     // TODO: clean this up...
     if (Session.get("dragging") && !Session.get("dragging_entity")) {
@@ -100,6 +102,7 @@ Meteor.startup(function() {
 
     Session.set("dragging", false);
     Session.set("dragging_entity", false);
+    Session.set("drawing", false);
   }
 
   document.addEventListener('wheel', function(e) {
@@ -131,6 +134,15 @@ Template.projectArea.helpers({
 
 // TODO: would prefer not to have global path like this.
 var path;
+var hit_segment, hit_path;
+
+// Options for paper.project.hitTest.
+// TODO: Move elsewhere.
+var hitOptions = {
+  segments: true,
+  stroke: true,
+  tolerance: 15,
+};
 
 Template.projectArea.events({
   "dblclick": function(e, template) {
@@ -150,29 +162,59 @@ Template.projectArea.events({
   },
 
   "mousedown": function(e, template) {
-    var tool = Session.get("tool");
-    if (tool == "draw") {
+    // Handle drawing-related stuff.
+    // TODO: move this elsewhere.
+    if (Session.get("tool") == "draw") {
       var world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
-      path = new paper.Path({
-        segments: [world_pt],
-        strokeColor: 'black',
-      });
+      var hitResult = paper.project.hitTest(world_pt);
+      console.log(hitResult, hitOptions);
+      if (!hitResult) {
+	Session.set("drawing", true);
+	path = new paper.Path({
+          segments: [world_pt],
+          strokeColor: 'black',
+	});
+      } else {
+	// Got a hitResult. 
+	hit_path = hitResult.item;
+	hit_path.selected = true;
+	if (hitResult.type == 'segment') {
+	  hit_segment = hitResult.segment;
+	} else if (hitResult.type == 'stroke') {
+	  var location = hitResult.location;
+	  hit_segment = hit_path.insert(location.index + 1, world_pt);
+	  hit_path.smooth();
+	}
+      }
     }
   },
 
   "mousemove": function(e, template) {
-    if (Session.get("dragging") && Session.get("tool") == "draw"
-	&& path != undefined) {
+    if (Session.get("drawing") && path != undefined) {
       var world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
       path.add(world_pt);
+    } else if (Session.get("tool") == "draw" && e.which == 1) { // ugly
+      var cp = Session.get('click_pt');
+      var dp = Session.get('drag_pt');
+      var delta = {x: dp.x - cp.x, y: dp.y - cp.y};
+      if (hit_segment) {
+	hit_segment.point += new paper.Point(delta);
+	hit_path.smooth();
+      } else if (hit_path) {
+	hit_path.position += new paper.Point(delta);
+      }
     }
   },
-
+  
   "mouseup": function(e, template) {
-    if (Session.get("tool") == "draw" && path != undefined) {
+    if (Session.get("drawing") && path != undefined) {
       path.simplify();
       create_path(path.pathData);
       path.remove();
+      // NOTE: "drawing" session variable is cleared in document event handler,
+      // just in case mouse out of project area.
+      // TODO: consider moving all of this there, as path isn't persisted when
+      // mouseup elsewhere.
     }
   },
 });
