@@ -54,6 +54,7 @@ Meteor.startup(function() {
   window.onmousedown = function(e) {
     // Conditionally clear selection if clicked canvas or background
     // TODO: a bit simplistic
+    // Also I don't think e.which works this way.
     if (e.which == 1) {
       var name = e.target.localName;
       if (name == "body" || name == "canvas") {
@@ -67,9 +68,7 @@ Meteor.startup(function() {
     Session.set("click_pt", {x: world_pt.x, y: world_pt.y});
     Session.set("drag_pt", {x: world_pt.x, y: world_pt.y});
     Session.set("initial_view", Session.get("view"));
-    // TODO: handle more elegantly
-    if (Session.get("tool") != "draw") Session.set("dragging", true);
-
+    Session.set("dragging", true);
   }
 
   window.onmousemove = function(e) {
@@ -83,7 +82,8 @@ Meteor.startup(function() {
     }
     Session.set("drag_pt", {x: world_pt.x, y: world_pt.y});
 
-    if (Session.get("dragging") && !Session.get("dragging_entity")) {
+    if (Session.get("dragging") && !Session.get("dragging_entity")
+        && Session.get("tool") != "draw") {
       var cp = Session.get('click_pt');
       var view = Session.get("initial_view");
       view.x -= world_pt.x - cp.x;
