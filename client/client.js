@@ -83,7 +83,7 @@ Meteor.startup(function() {
     Session.set("drag_pt", {x: world_pt.x, y: world_pt.y});
 
     if (Session.get("dragging") && !Session.get("dragging_entity")
-        && Session.get("tool") != "draw") {
+        && Session.get("tool") != "curve") {
       var cp = Session.get('click_pt');
       var view = Session.get("initial_view");
       view.x -= world_pt.x - cp.x;
@@ -153,7 +153,10 @@ Template.projectArea.events({
     case "project":
       create_project_link(world_pt.x, world_pt.y, "null");
       break;
-    case "edge": break;
+    case "edge":
+      break;
+    case "curve":
+      break;
     default:
       console.log("Tool not found:", Session.get("tool"));
       break;
@@ -163,7 +166,7 @@ Template.projectArea.events({
   "mousedown": function(e, template) {
     // Handle drawing-related stuff.
     // TODO: move this elsewhere.
-    if (Session.get("tool") == "draw") {
+    if (Session.get("tool") == "curve") {
       var world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
       var hitResult = paper.project.hitTest(world_pt, hitOptions);
       if (!hitResult) {
@@ -191,7 +194,7 @@ Template.projectArea.events({
     if (Session.get("drawing") && path) {
       var world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
       path.add(world_pt);
-    } else if (Session.get("tool") == "draw" && Session.get("dragging")) {
+    } else if (Session.get("tool") == "curve" && Session.get("dragging")) {
       var dp = Session.get('drag_pt');
       if (segment) {
 	segment.point = dp;
@@ -318,7 +321,8 @@ Template.add_tag.events({
 
 Template.toolbar.helpers({
   tools: function() {
-    return [{name: "text"}, {name: "project"}, {name: "edge"}, {name: "draw"}];
+    return [{name: "text"}, {name: "project"}, {name: "edge"},
+	    {name: "curve"}];
   },
   
 });
@@ -556,7 +560,6 @@ function create_project_link(x, y, link) {
 }
 
 function create_path(pathData) {
-  // wait until after done drawing before insertion?
   Entities.insert({
     pathData: pathData,
     type: "path", project: Session.get("project_id"),
