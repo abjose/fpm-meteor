@@ -133,15 +133,14 @@ Template.projectArea.helpers({
 });
 
 // TODO: would prefer not to have global path like this.
-var path;
-var hit_segment, hit_path;
+var path, segment;
 
 // Options for paper.project.hitTest.
 // TODO: Move elsewhere.
 var hitOptions = {
   segments: true,
   stroke: true,
-  tolerance: 15,
+  tolerance: 5,
 };
 
 Template.projectArea.events({
@@ -166,8 +165,7 @@ Template.projectArea.events({
     // TODO: move this elsewhere.
     if (Session.get("tool") == "draw") {
       var world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
-      var hitResult = paper.project.hitTest(world_pt);
-      console.log(hitResult, hitOptions);
+      var hitResult = paper.project.hitTest(world_pt, hitOptions);
       if (!hitResult) {
 	Session.set("drawing", true);
 	path = new paper.Path({
@@ -176,30 +174,30 @@ Template.projectArea.events({
 	});
       } else {
 	// Got a hitResult. 
-	hit_path = hitResult.item;
-	hit_path.selected = true;
+	path = hitResult.item;
+	path.selected = true;
 	if (hitResult.type == 'segment') {
-	  hit_segment = hitResult.segment;
+	  segment = hitResult.segment;
 	} else if (hitResult.type == 'stroke') {
 	  var location = hitResult.location;
-	  hit_segment = hit_path.insert(location.index + 1, world_pt);
-	  hit_path.smooth();
+	  segment = path.insert(location.index + 1, world_pt);
+	  path.smooth();
 	}
       }
     }
   },
 
   "mousemove": function(e, template) {
-    if (Session.get("drawing") && path != undefined) {
+    if (Session.get("drawing") && path) {
       var world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
       path.add(world_pt);
-    } else if (Session.get("tool") == "draw" && Session.get("dragging")) { 
+    } else if (Session.get("tool") == "draw" && Session.get("dragging")) {
       var dp = Session.get('drag_pt');
-      if (hit_segment) {
-	hit_segment.point = dp;
-	hit_path.smooth();
-      } else if (hit_path) {
-	hit_path.position = dp;
+      if (segment) {
+	segment.point = dp;
+	path.smooth();
+      } else if (path) {
+	path.position = dp;
       }
     }
   },
