@@ -193,15 +193,13 @@ Template.projectArea.events({
     if (Session.get("drawing") && path != undefined) {
       var world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
       path.add(world_pt);
-    } else if (Session.get("tool") == "draw" && e.which == 1) { // ugly
-      var cp = Session.get('click_pt');
+    } else if (Session.get("tool") == "draw" && Session.get("dragging")) { 
       var dp = Session.get('drag_pt');
-      var delta = {x: dp.x - cp.x, y: dp.y - cp.y};
       if (hit_segment) {
-	hit_segment.point += new paper.Point(delta);
+	hit_segment.point = dp;
 	hit_path.smooth();
       } else if (hit_path) {
-	hit_path.position += new paper.Point(delta);
+	hit_path.position = dp;
       }
     }
   },
