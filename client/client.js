@@ -82,8 +82,9 @@ Meteor.startup(function() {
     }
     Session.set("drag_pt", {x: world_pt.x, y: world_pt.y});
 
+    var tool = Session.get("tool");
     if (Session.get("dragging") && !Session.get("dragging_entity")
-        && Session.get("tool") != "curve") {
+        && !(tool == "curve" || tool == "line")) {
       var cp = Session.get('click_pt');
       var view = Session.get("initial_view");
       view.x -= world_pt.x - cp.x;
@@ -167,6 +168,14 @@ Template.projectArea.events({
       break;
     case "curve":
       break;
+    case "line":
+      // TODO: Don't repeat yourself.
+      if (!path) break;
+      create_path(path.pathData);
+      path.remove();
+      path = undefined;
+      Session.set("drawing", false);
+      break;
     default:
       console.log("Tool not found:", Session.get("tool"));
       break;
@@ -176,17 +185,25 @@ Template.projectArea.events({
   "mousedown": function(e, template) {
     // Handle drawing-related stuff.
     // TODO: move this elsewhere.
-    if (Session.get("tool") == "curve") {
+    var tool = Session.get("tool");
+    if (tool == "curve" || tool == "line") {
       var world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
       var hitResult = paper.project.hitTest(world_pt, hitOptions);
       if (!hitResult) {
-	Session.set("drawing", true);
-	path = new paper.Path({
-          segments: [world_pt],
-          strokeColor: 'black',
-	});
+	if (tool == "line" && path) {
+	  console.log("adding another point");
+	  var world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
+	  path.add(world_pt);
+	} else {
+	  console.log("adding first point");
+	  Session.set("drawing", true);
+	  path = new paper.Path({
+            segments: [world_pt],
+            strokeColor: 'black',
+	  });
+	}
       } else {
-	// Got a hitResult. 
+	// Got a hitResult.
 	path = hitResult.item;
 	path.selected = true;
 	if (hitResult.type == 'segment') {
@@ -194,21 +211,24 @@ Template.projectArea.events({
 	} else if (hitResult.type == 'stroke') {
 	  var location = hitResult.location;
 	  segment = path.insert(location.index + 1, world_pt);
-	  path.smooth();
+	  if (tool == "curve") path.smooth();
 	}
       }
     }
   },
 
   "mousemove": function(e, template) {
-    if (Session.get("drawing") && path) {
+    var tool = Session.get("tool");
+    // TODO: make it so draw line for line (before placing)
+    if (Session.get("drawing") && path && tool == "curve") {
       var world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
       path.add(world_pt);
-    } else if (Session.get("tool") == "curve" && Session.get("dragging")) {
+    } else if ((tool == "curve" || tool == "line") && Session.get("dragging") &&
+	       !Session.get("drawing")) {
       var dp = Session.get('drag_pt');
       if (segment) {
 	segment.point = dp;
-	path.smooth();
+	if (tool == "curve") path.smooth();
       } else if (path) {
 	path.position = dp;
       }
@@ -216,14 +236,12 @@ Template.projectArea.events({
   },
   
   "mouseup": function(e, template) {
-    if (Session.get("drawing") && path != undefined) {
+    if (Session.get("drawing") && path && Session.get("tool") == "curve") {
       path.simplify();
       create_path(path.pathData);
       path.remove();
-      // NOTE: "drawing" session variable is cleared in document event handler,
-      // just in case mouse out of project area.
-      // TODO: consider moving all of this there, as path isn't persisted when
-      // mouseup elsewhere.
+      path = undefined;
+      Session.set("drawing", false);
     }
   },
 });
@@ -332,7 +350,7 @@ Template.add_tag.events({
 Template.toolbar.helpers({
   tools: function() {
     return [{name: "text"}, {name: "project"}, {name: "edge"},
-	    {name: "curve"}];
+	    {name: "curve"}, {name: "line"}, ];
   },
   
 });
