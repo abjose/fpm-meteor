@@ -210,6 +210,7 @@ Template.projectArea.events({
 	}
       } else {
 	// Got a hitResult.
+	if (path && hitResult.item != path) path.selected = false;
 	path = hitResult.item;
 	path.selected = true;
 	if (hitResult.type == 'segment') {
