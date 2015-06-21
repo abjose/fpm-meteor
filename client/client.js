@@ -214,10 +214,16 @@ Template.projectArea.events({
 	path.selected = true;
 	if (hitResult.type == 'segment') {
 	  segment = hitResult.segment;
+	  if (e.shiftKey) {
+	    segment.remove();
+	    segment = undefined;
+	  }
 	} else if (hitResult.type == 'stroke') {
-	  var location = hitResult.location;
-	  segment = path.insert(location.index + 1, world_pt);
-	  if (tool == "curve") path.smooth();
+	  if (e.shiftKey) {
+	    var location = hitResult.location;
+	    segment = path.insert(location.index + 1, world_pt);
+	    if (tool == "curve") path.smooth();
+	  }
 	}
       }
     }
