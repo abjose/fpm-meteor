@@ -201,7 +201,6 @@ Template.projectArea.events({
 	  var world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
 	  path.add(world_pt);
 	} else {
-	  console.log("adding first point");
 	  Session.set("drawing", true);
 	  path = new paper.Path({
             segments: [world_pt],
@@ -249,6 +248,7 @@ Template.projectArea.events({
   },
   
   "mouseup": function(e, template) {
+    segment = undefined;
     if (Session.get("drawing") && path && Session.get("tool") == "curve") {
       path.simplify();
       create_path(path);
@@ -602,7 +602,7 @@ function create_project_link(x, y, link) {
 }
 
 function create_path(path) {
-  if (path.segments.length < 2) return;
+  if (path.length < 0.5) return;
   Entities.insert({
     pathData: path.pathData,
     type: "path", project: Session.get("project_id"),
