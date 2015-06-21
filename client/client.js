@@ -190,6 +190,12 @@ Template.projectArea.events({
       var world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
       var hitResult = paper.project.hitTest(world_pt, hitOptions);
       if (!hitResult) {
+	// De-select selected path.
+	if (tool == "curve" && path) {
+	  path.selected = false;
+	  path = undefined;
+	}
+
 	if (tool == "line" && path) {
 	  console.log("adding another point");
 	  var world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
