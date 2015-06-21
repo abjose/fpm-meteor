@@ -102,7 +102,17 @@ Meteor.startup(function() {
 
     Session.set("dragging", false);
     Session.set("dragging_entity", false);
-    Session.set("drawing", false);
+  }
+
+  window.onkeydown = function(e) {
+    // If backspace or delete, remove selected path.
+    var tool = Session.get("tool");
+    if (path && (tool == "curve" || tool == "line") &&
+	(e.keyCode == 8 || e.keyCode == 46)) {
+      Entities.remove(path.data._id);
+      path.remove();
+      path = undefined;
+    }
   }
 
   document.addEventListener('wheel', function(e) {
