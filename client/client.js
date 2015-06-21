@@ -517,6 +517,7 @@ Template.path.helpers({
     if (!Session.get("init_paper")) return;
     var foo = new paper.Path(this.pathData);
     foo.strokeColor = "black";
+    foo.data._id = this._id;
   },
 });
 
