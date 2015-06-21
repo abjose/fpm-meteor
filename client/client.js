@@ -171,7 +171,7 @@ Template.projectArea.events({
     case "line":
       // TODO: Don't repeat yourself.
       if (!path) break;
-      create_path(path.pathData);
+      create_path(path);
       path.remove();
       path = undefined;
       Session.set("drawing", false);
@@ -238,7 +238,7 @@ Template.projectArea.events({
   "mouseup": function(e, template) {
     if (Session.get("drawing") && path && Session.get("tool") == "curve") {
       path.simplify();
-      create_path(path.pathData);
+      create_path(path);
       path.remove();
       path = undefined;
       Session.set("drawing", false);
@@ -588,9 +588,10 @@ function create_project_link(x, y, link) {
   });
 }
 
-function create_path(pathData) {
+function create_path(path) {
+  if (path.segments.length < 2) return;
   Entities.insert({
-    pathData: pathData,
+    pathData: path.pathData,
     type: "path", project: Session.get("project_id"),
   });
 }
