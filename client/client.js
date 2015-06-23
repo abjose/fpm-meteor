@@ -231,7 +231,7 @@ Template.projectArea.events({
 
   "mousemove": function(e, template) {
     var tool = Session.get("tool");
-    // TODO: make it so draw line for line (before placing)
+    // TODO: redraw line for polyline as mouse moves
     if (Session.get("drawing") && path && tool == "curve") {
       var world_pt = ScreenToWorld({x: e.clientX, y: e.clientY});
       path.add(world_pt);
@@ -255,6 +255,9 @@ Template.projectArea.events({
       path.remove();
       path = undefined;
       Session.set("drawing", false);
+    } else if (path && path._id) {
+      // TODO: combine these two cases better.
+      Entities.update(path.data._id, {$set: {pathData: path.pathData}});
     }
   },
 });
